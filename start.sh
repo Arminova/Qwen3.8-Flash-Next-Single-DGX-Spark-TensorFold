@@ -1,7 +1,7 @@
 #!/bin/bash
 # start.sh: serves Qwen3.8-Flash-Next (NVIDIA FP4-Local) on one DGX Spark through TensorFold with our patches: an
-# OpenAI-compatible API on BIND:PORT (127.0.0.1:8888 by default), thinking on, MTP drafts. KV=bf16 (default): 4
-# streams of 65,536 tokens; KV=fp8: 5 streams of 262,144. Runs detached as container NAME and waits until the model
+# OpenAI-compatible API on BIND:PORT (127.0.0.1:8888 by default), thinking on, MTP drafts. KV=bf16 (default): 3
+# streams of 262,144 tokens; KV=fp8: 5 streams of 262,144. Runs detached as container NAME and waits until the model
 # answers (~75 s from a warm disk). Settings: config.sh (or environment variables / .env).
 #   ./start.sh      KV=fp8 ./start.sh      ./stop.sh      docker logs -f qwen38-flash-next-tf
 set -euo pipefail

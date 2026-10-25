@@ -31,10 +31,11 @@ NAME=${NAME:-qwen38-flash-next-tf}
 SERVED_MODEL_NAME=${SERVED_MODEL_NAME:-qwen3.8-flash-next}
 BIND=${BIND:-127.0.0.1}
 PORT=${PORT:-8888}
-# KV cache: bf16 (the default: fastest on short and mixed loads) or fp8 (the long-window mode: about 42 % fewer cache
-# bytes a token, faster prompts from 16K tokens up, room for 262,144 tokens x 5 streams)
+# KV cache: bf16 (the default: 3 streams of 262,144 tokens, the most the engine fits) or fp8 (about 42 % fewer cache
+# bytes a token, faster prompts, 5 streams of 262,144 tokens)
 KV=${KV:-bf16}
-if [ "$KV" = fp8 ]; then CONTEXT=${CONTEXT:-262144}; PARALLEL=${PARALLEL:-5}; else CONTEXT=${CONTEXT:-65536}; PARALLEL=${PARALLEL:-4}; fi
+CONTEXT=${CONTEXT:-262144}
+if [ "$KV" = fp8 ]; then PARALLEL=${PARALLEL:-5}; else PARALLEL=${PARALLEL:-3}; fi
 MAX_TOKENS=${MAX_TOKENS:-32768}
 # the settings every number in the README was measured with (4-bit draft head, 4,096-row prompt chunks)
 ENGINE_ENV=${ENGINE_ENV:-TF_FLASHNEXT_DRAFT_HEAD=affine4 TF_FLASHNEXT_CHUNK=4096}

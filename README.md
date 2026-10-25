@@ -2,7 +2,7 @@
 
 Qwen3.8-Flash-Next (a mixture of experts with 176B parameters) served on **one** NVIDIA DGX Spark through
 [TensorFold](https://github.com/ashhart/TensorFold)'s native engine, tuned for the GB10. OpenAI-compatible API,
-thinking on, the checkpoint's own MTP drafts, 4 streams of 65,536 tokens (or 5 of 262,144 with the FP8 cache).
+thinking on, the checkpoint's own MTP drafts, 3 streams of 262,144 tokens (5 with the FP8 cache).
 
 This repository is TensorFold 1.1.5 plus four patches of our own for the GB10: prompt and decode paths, the loader,
 an MXFP8 language-model head, an optional FP8 KV cache, admission of requests that arrive together, and two fixes.
@@ -154,7 +154,7 @@ Everything is in [`config.sh`](config.sh); override a value with an environment 
 | `BIND`, `PORT` | `127.0.0.1`, `8888` | where the API listens; `BIND=0.0.0.0` for your network |
 | `API_KEY` | empty | require `Authorization: Bearer <key>` |
 | `KV` | `bf16` | the KV cache: `bf16`, or `fp8` for long windows |
-| `CONTEXT`, `PARALLEL` | 65,536 x 4 (`fp8`: 262,144 x 5) | the window (prompt plus reply) and the streams served at once |
+| `CONTEXT`, `PARALLEL` | 262,144 x 3 (`fp8`: 262,144 x 5) | the window (prompt plus reply) and the streams served at once |
 | `SERVED_MODEL_NAME` | `qwen3.8-flash-next` | the model name clients send |
 | `EXTRA_ENV` | empty | engine switches, space-separated `KEY=VALUE` (below) |
 
