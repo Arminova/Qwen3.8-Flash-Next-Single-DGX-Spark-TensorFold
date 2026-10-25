@@ -2,7 +2,7 @@ From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?J=C3=BCrgen=20Schmied?=
  <600316+jschmied@users.noreply.github.com>
 Date: Wed, 21 Oct 2026 07:19:43 +0200
-Subject: [PATCH 4/9] contract: the lane's half tiles replace the 64-column
+Subject: [PATCH 04/11] contract: the lane's half tiles replace the 64-column
  16-row tile (MXFP8 and BF16), a 1.5x-scale control, gate 5 records
 
 (cherry picked from commit af619a83e1f31fda85eb098ad82d9452e85eba65)

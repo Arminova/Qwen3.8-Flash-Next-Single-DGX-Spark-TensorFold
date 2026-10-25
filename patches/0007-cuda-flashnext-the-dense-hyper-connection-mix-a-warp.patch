@@ -2,7 +2,7 @@ From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?J=C3=BCrgen=20Schmied?=
  <600316+jschmied@users.noreply.github.com>
 Date: Wed, 21 Oct 2026 13:09:16 +0200
-Subject: [PATCH 7/9] cuda flashnext: the dense hyper-connection mix a warp a
+Subject: [PATCH 07/11] cuda flashnext: the dense hyper-connection mix a warp a
  32-column group, eight groups a block
 
 fn_hc_dense_mix ran one 32-thread block a (row, 32-column group): 80 blocks of one warp a row at 2,560

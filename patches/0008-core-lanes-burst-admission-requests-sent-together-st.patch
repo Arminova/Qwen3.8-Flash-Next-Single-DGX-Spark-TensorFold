@@ -1,8 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Armin <2369138+Arminova@users.noreply.github.com>
 Date: Sun, 25 Oct 2026 19:28:40 +0000
-Subject: [PATCH 8/9] core lanes: burst admission, requests sent together start
- in lockstep
+Subject: [PATCH 08/11] core lanes: burst admission, requests sent together
+ start in lockstep
 
 An idle engine holds a first arrival for TENSORFOLD_ADMIT_WAIT_MS (default 5, 0 turns it off) for requests
 sent with it. When two or more wait, every one is admitted before any launches (so none takes the lone

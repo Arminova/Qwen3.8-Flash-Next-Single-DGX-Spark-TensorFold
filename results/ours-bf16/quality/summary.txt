@@ -1,7 +1,7 @@
-2026-10-25 18:53:45 start: http://127.0.0.1:8890 as qwen3.8-flash-next (quick)
-2026-10-25 18:54:18 bench_openai rc=0: "prompt": "fibonacci-raw" =: 82.80388515734579 "prompt": "gpu-chat-no-think" =: 57.58903498065281 
-2026-10-25 18:55:41 bench_concurrent rc=0: code x1 82.7 (alone 2/2, failed 0); code x2 143.3 (alone 4/4, failed 0); code x4 234.3 (alone 8/8, failed 0); chat x1 58.1 (alone 2/2, failed 0); chat x2 99.7 (alone 4/4, failed 0); chat x4 164.8 (alone 8/8, failed 0)
-2026-10-25 19:01:23 tasks rc=0 in 342s:  gsm8k 47/50; json 15/15; instruct 8/10; tools 20/20; agent 8/10;
-2026-10-25 19:01:24 code:  code 25/25
-2026-10-25 19:02:22 accept rc=0: {"summary": "code", "prompts": 3, "tokens": 1152, "tokens_per_round": 5.43, "tok_s": 79.1} {"summary": "explain", "prompts": 3, "tokens": 1152, "tokens_per_round": 3.53, "tok_s": 60.4} {"summary": "prose", "prompts": 2, "tokens": 646, "tokens_per_round": 2.23, "tok_s": 43.8} {"summary": "german", "prompts": 1, "tokens": 384, "tokens_per_round": 2.43, "tok_s": 46.6} 
-2026-10-25 19:02:26 min MemAvailable 37.7 GB
+2026-10-25 22:06:44 start: http://127.0.0.1:8890 as qwen3.8-flash-next (quick)
+2026-10-25 22:07:20 bench_openai rc=0: "prompt": "fibonacci-raw" =: 81.21736611862912 "prompt": "gpu-chat-no-think" =: 49.471959334832825 
+2026-10-25 22:08:49 bench_concurrent rc=0: code x1 80.8 (alone 2/2, failed 0); code x2 143.6 (alone 4/4, failed 0); code x4 228.6 (alone 8/8, failed 0); chat x1 49.7 (alone 2/2, failed 0); chat x2 90.3 (alone 4/4, failed 0); chat x4 149.9 (alone 8/8, failed 0)
+2026-10-25 22:14:41 tasks rc=0 in 352s:  gsm8k 47/50; json 15/15; instruct 8/10; tools 20/20; agent 8/10;
+2026-10-25 22:14:41 code:  code 25/25
+2026-10-25 22:15:43 accept rc=0: {"summary": "code", "prompts": 3, "tokens": 1152, "tokens_per_round": 5.36, "tok_s": 76.9} {"summary": "explain", "prompts": 3, "tokens": 1152, "tokens_per_round": 3.2, "tok_s": 55.0} {"summary": "prose", "prompts": 2, "tokens": 640, "tokens_per_round": 2.23, "tok_s": 41.5} {"summary": "german", "prompts": 1, "tokens": 384, "tokens_per_round": 2.42, "tok_s": 46.4} 
+2026-10-25 22:15:44 min MemAvailable 37.6 GB

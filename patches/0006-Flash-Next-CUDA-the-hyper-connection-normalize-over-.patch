@@ -2,7 +2,7 @@ From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?J=C3=BCrgen=20Schmied?=
  <600316+jschmied@users.noreply.github.com>
 Date: Wed, 21 Oct 2026 07:12:58 +0200
-Subject: [PATCH 6/9] Flash Next CUDA: the hyper-connection normalize over
+Subject: [PATCH 06/11] Flash Next CUDA: the hyper-connection normalize over
  256-column slices
 
 fn_hc_normalize ran one block a (row, stream): at one decode row four blocks scaled 10,240 values

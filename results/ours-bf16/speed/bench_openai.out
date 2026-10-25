@@ -1,18 +1,18 @@
-{"label": "", "prompt": "fibonacci-raw", "temperature": 0.0, "decode_tps_median": 83.26530070999507, "decode_tps_all": [83.27, 83.27, 83.06], "ttft_s_median": 0.10120819904841483}
-{"label": "", "prompt": "gpu-chat-no-think", "temperature": 0.0, "decode_tps_median": 57.89611010966807, "decode_tps_all": [57.9, 57.9, 57.88], "ttft_s_median": 0.13804516894742846}
+{"label": "", "prompt": "fibonacci-raw", "temperature": 0.0, "decode_tps_median": 81.49166411809865, "decode_tps_all": [81.52, 81.29, 81.49], "ttft_s_median": 0.12857129680924118}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 0.0, "decode_tps_median": 49.68955896416784, "decode_tps_all": [49.69, 49.75, 49.69], "ttft_s_median": 0.16231190506368876}
 [
  {
   "label": "",
   "prompt": "fibonacci-raw",
   "temperature": 0.0,
   "tokens": 256,
-  "decode_tps_median": 83.26530070999507,
+  "decode_tps_median": 81.49166411809865,
   "decode_tps_all": [
-   83.27,
-   83.27,
-   83.06
+   81.52,
+   81.29,
+   81.49
   ],
-  "ttft_s_median": 0.10120819904841483,
+  "ttft_s_median": 0.12857129680924118,
   "evidence": [
    {
     "prompt_tokens": 14,
@@ -20,8 +20,8 @@
     "tokens": 256,
     "cache_state": "cold",
     "complete": true,
-    "token_sha": "d8f550c1ded0",
-    "output_sha256": "38e4a0109d0ddd70d488184b786c38a08ee9bf5ebd2daedaeca65dd59f8cea18"
+    "token_sha": "d011394c106d",
+    "output_sha256": "e5d92c5b082fb69d75b406717ce42c2ac10a48ee935469929513b36ad7dea876"
    },
    {
     "prompt_tokens": 14,
@@ -29,8 +29,8 @@
     "tokens": 256,
     "cache_state": "cold",
     "complete": true,
-    "token_sha": "d8f550c1ded0",
-    "output_sha256": "38e4a0109d0ddd70d488184b786c38a08ee9bf5ebd2daedaeca65dd59f8cea18"
+    "token_sha": "d011394c106d",
+    "output_sha256": "e5d92c5b082fb69d75b406717ce42c2ac10a48ee935469929513b36ad7dea876"
    },
    {
     "prompt_tokens": 14,
@@ -38,8 +38,8 @@
     "tokens": 256,
     "cache_state": "cold",
     "complete": true,
-    "token_sha": "d8f550c1ded0",
-    "output_sha256": "38e4a0109d0ddd70d488184b786c38a08ee9bf5ebd2daedaeca65dd59f8cea18"
+    "token_sha": "d011394c106d",
+    "output_sha256": "e5d92c5b082fb69d75b406717ce42c2ac10a48ee935469929513b36ad7dea876"
    }
   ],
   "sample": "\n\n<think>\n\n</think>\n\nHere is a short, efficient Python function to compute the Fibonacci sequence, followed by an explanation.\n\n### The Code\n\n```python\ndef fibo"
@@ -49,13 +49,13 @@
   "prompt": "gpu-chat-no-think",
   "temperature": 0.0,
   "tokens": 256,
-  "decode_tps_median": 57.89611010966807,
+  "decode_tps_median": 49.68955896416784,
   "decode_tps_all": [
-   57.9,
-   57.9,
-   57.88
+   49.69,
+   49.75,
+   49.69
   ],
-  "ttft_s_median": 0.13804516894742846,
+  "ttft_s_median": 0.16231190506368876,
   "evidence": [
    {
     "prompt_tokens": 31,
@@ -63,8 +63,8 @@
     "tokens": 256,
     "cache_state": "cold",
     "complete": true,
-    "token_sha": "0af52ecac88b",
-    "output_sha256": "4548c78bdbd40ea1dde8824c43ebb43a2a9b1252f0ebc854b95b990739fc2bc8"
+    "token_sha": "7cbf04f91439",
+    "output_sha256": "94d66210dc10502fb9d28cfce95456cba4c892a2777d132b887abfbfaeb867d5"
    },
    {
     "prompt_tokens": 31,
@@ -72,8 +72,8 @@
     "tokens": 256,
     "cache_state": "cold",
     "complete": true,
-    "token_sha": "0af52ecac88b",
-    "output_sha256": "4548c78bdbd40ea1dde8824c43ebb43a2a9b1252f0ebc854b95b990739fc2bc8"
+    "token_sha": "7cbf04f91439",
+    "output_sha256": "94d66210dc10502fb9d28cfce95456cba4c892a2777d132b887abfbfaeb867d5"
    },
    {
     "prompt_tokens": 31,
@@ -81,10 +81,10 @@
     "tokens": 256,
     "cache_state": "cold",
     "complete": true,
-    "token_sha": "0af52ecac88b",
-    "output_sha256": "4548c78bdbd40ea1dde8824c43ebb43a2a9b1252f0ebc854b95b990739fc2bc8"
+    "token_sha": "7cbf04f91439",
+    "output_sha256": "94d66210dc10502fb9d28cfce95456cba4c892a2777d132b887abfbfaeb867d5"
    }
   ],
-  "sample": "Here is an explanation of how matrix multiplication works on a GPU, followed by a simple numerical example.\n\n### Part 1: How Matrix Multiplication Uses a GPU (P"
+  "sample": "### How Matrix Multiplication Uses a GPU (In Plain English)\n\nImagine you have two large grids of numbers (matrices) that you need to multiply together. The resu"
  }
 ]

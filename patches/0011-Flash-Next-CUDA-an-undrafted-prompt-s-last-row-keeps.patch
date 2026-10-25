@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Armin <2369138+Arminova@users.noreply.github.com>
+Date: Sun, 25 Oct 2026 21:35:58 +0000
+Subject: [PATCH 11/11] Flash Next CUDA: an undrafted prompt's last row keeps
+ its bf16 slot rows
+
+A prompt pass that ends in `.last` without the MTP streams (a request with "draft": false) moves the last
+row's write-back inputs to row 0 before the head. Its MoE slot rows were copied as fp32 rows; after a prompt
+pass's bf16 slots (TF_FLASHNEXT_MOE_B16) the copy took bytes from rows 2r and 2r + 1 of the bf16 layout, so
+the last layer's MoE output for the prompt's last row, and with it the first token's scores, read stale rows.
+
+Drafted requests keep the streams and write every row back in place, so they never took this branch; the
+"draft": false check (bench_concurrent --serial) used short prompts, which took fp32 slots until prompt rows
+took the prompt form at any size. The copy now moves a bf16 row when the pending slots are bf16.
+---
+ zig/src/families/flashnext/cuda_batch_head.zig | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/zig/src/families/flashnext/cuda_batch_head.zig b/zig/src/families/flashnext/cuda_batch_head.zig
+index c33fe9bc..17c2605f 100644
+--- a/zig/src/families/flashnext/cuda_batch_head.zig
++++ b/zig/src/families/flashnext/cuda_batch_head.zig
+@@ -55,10 +55,12 @@ pub fn head(self: anytype, logits_host: ?[]u8) !void {
+                     try self.copy(s.pss, s.pss + r * pss_n * 4, pss_n * 4);
+                 }
+             } else if (r > 0) {
++                // the pending slot rows are bf16 after a prompt pass's bf16 MoE slots (writeback reads them so)
++                const slot_bytes = slots * dims * @as(usize, if (self.pending_b16) 2 else 4);
+                 try self.copy(s.h, s.h + r * wide * 2, wide * 2);
+                 try self.copy(s.pss, s.pss + r * pss_n * 4, pss_n * 4);
+                 try self.copy(s.inj, s.inj + r * streams * 2, streams * 2);
+-                try self.copy(s.y, s.y + r * slots * dims * 4, slots * dims * 4);
++                try self.copy(s.y, s.y + r * slot_bytes, slot_bytes);
+                 try self.copy(s.wts, s.wts + r * slots * 4, slots * 4);
+                 if (self.pending_f32) try self.copy(s.moe_f32, s.moe_f32 + r * dims * 4, dims * 4);
+             }

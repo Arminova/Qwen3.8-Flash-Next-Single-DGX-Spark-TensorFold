@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Armin <2369138+Arminova@users.noreply.github.com>
 Date: Sun, 25 Oct 2026 19:28:54 +0000
-Subject: [PATCH 9/9] Flash Next CUDA: GB10 tuning for FP4-Local (prompt,
+Subject: [PATCH 09/11] Flash Next CUDA: GB10 tuning for FP4-Local (prompt,
  decode, load, MXFP8 head, FP8 KV)
 
 Measured on one GB10 with nvidia/Qwen3.8-Flash-Next-FP4-Local; every change landed behind a knob, was A/B'd
