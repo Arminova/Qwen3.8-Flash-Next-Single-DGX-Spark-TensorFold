@@ -1,8 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Armin <2369138+Arminova@users.noreply.github.com>
 Date: Sun, 25 Oct 2026 21:26:07 +0000
-Subject: [PATCH 10/11] Flash Next CUDA: prompt rows in the prompt form
- whatever the pass size
+Subject: [PATCH 3/4] Flash Next CUDA: prompt rows in the prompt form whatever
+ the pass size
 
 A prompt's bits depended on how many rows its pass had: the MXFP8 prompt tile (from 256 rows), bf16 MoE slots
 (from the expert prompt tile's 64 rows) and the fused FMA DeltaNet chain (from 64 rows) applied to large lone
@@ -21,22 +21,25 @@ GB10, FP4-Local: greedy and seeded-sampled reply hashes on 300- to 15,000-token 
 prompt cache on (4 resumed prompts) and off, bf16 and FP8 KV; with the cache off they equal the build before.
 Speed unchanged (mixed 4 streams 123.0 tok/s, prompts 2,282 / 2,292 at 4K / 16K); tasks 123 / 130.
 ---
- zig/src/families/flashnext/cuda_batch.zig     | 36 ++++++++++++-------
- .../families/flashnext/cuda_batch_state.zig   | 16 ++++++---
- zig/src/families/flashnext/cuda_lanes.zig     |  4 +--
+ zig/src/families/flashnext/cuda_batch.zig     | 38 ++++++++++++-------
+ .../families/flashnext/cuda_batch_state.zig   | 16 +++++---
+ zig/src/families/flashnext/cuda_lanes.zig     |  4 +-
  zig/src/families/flashnext/cuda_mtp_ops.zig   |  2 +-
- zig/src/families/flashnext/cuda_tiles.zig     |  9 ++---
- 5 files changed, 43 insertions(+), 24 deletions(-)
+ zig/src/families/flashnext/cuda_tiles.zig     |  9 +++--
+ .../families/flashnext/cuda_zero_slice.zig    |  5 ++-
+ 6 files changed, 47 insertions(+), 27 deletions(-)
 
 diff --git a/zig/src/families/flashnext/cuda_batch.zig b/zig/src/families/flashnext/cuda_batch.zig
-index 7b7094ea..1bca06f2 100644
+index a5abce1b..55144fb6 100644
 --- a/zig/src/families/flashnext/cuda_batch.zig
 +++ b/zig/src/families/flashnext/cuda_batch.zig
-@@ -157,7 +157,15 @@ pub fn Pass(comptime Tri: type) type {
+@@ -152,8 +152,16 @@ pub fn Pass(comptime Tri: type) type {
  
          /// qmm.cu's arithmetic over m rows into out (bf16) or part (fp32 K slices); returns the slices (1 when folded).
          pub fn lane(self: *Self, x: u64, xs: u64, w: Q4, out: u64, part: u64, m: usize, sk: usize) !usize {
+-            if (try zs.lane(self.k, self.stream, self.s, self.zero_slices, x, w, part, m, sk)) |one| return one;
 -            return tiles.matmul(self.k, self.stream, x, xs, w, out, part, self.s.native_part, m, sk);
++            if (try zs.lane(self.k, self.stream, self.s, self.zero_slices, x, w, part, m, sk, self.promptForm())) |one| return one;
 +            return tiles.matmul(self.k, self.stream, x, xs, w, out, part, self.s.native_part, m, sk, self.promptForm());
 +        }
 +
@@ -49,7 +52,7 @@ index 7b7094ea..1bca06f2 100644
          }
  
          pub fn sumSlices(self: *Self, part: u64, out: u64, bf16: bool, n: usize, sk: usize) !void {
-@@ -318,20 +326,21 @@ pub fn Pass(comptime Tri: type) type {
+@@ -294,20 +302,21 @@ pub fn Pass(comptime Tri: type) type {
              const xs_act = s.xs_act + r0 * (low / 32) * 4;
              const down = hc_w.down.native orelse return error.UnexpectedTensor;
              const up = hc_w.up.native orelse return error.UnexpectedTensor;
@@ -75,7 +78,7 @@ index 7b7094ea..1bca06f2 100644
                  cuda.qmmf.splitK(up.n, up.k) == 1 and dims == 2560 and streams == 4 and self.tri.own != null and hcUpmix();
          }
  
-@@ -369,7 +378,8 @@ pub fn Pass(comptime Tri: type) type {
+@@ -345,7 +354,8 @@ pub fn Pass(comptime Tri: type) type {
                  try self.copy(keep.hist, self.seq.conv[li].ptr, (gdn.taps - 1) * gdn.conv_dim * 2);
              }
              // every row's conv, norms and gates, the recurrence, then the gated norm: the one-block chain's bits
@@ -85,12 +88,12 @@ index 7b7094ea..1bca06f2 100644
              if (fused) {
                  // the three in one kernel a value head: the same per-row op sequences, no fp32 rows through memory
                  const st = self.seq.state[li].ptr;
-@@ -547,10 +557,12 @@ pub fn Pass(comptime Tri: type) type {
-                 // one rank writes every slot; only a rank that skips the shared one needs zeros for the sum over ranks (#1147)
-                 if (native.world != 1 or native.rank != 0) try self.stream.d.check(self.stream.d.api.cuMemsetD8Async(s.y, 0, pairs * dims * 4, self.stream.handle), "cuMemsetD8Async");
-                 // from factRows() rows the prompt tiles: the decode form's bits, an expert's weights read once an item
-+                // (fewer rows read them faster on the decode tiles)
-                 const pt: usize = if (n >= factRows()) cuda.experts.promptTile(.nvfp4) else 16;
+@@ -522,20 +532,22 @@ pub fn Pass(comptime Tri: type) type {
+             if (lw.native_experts) |*native| {
+                 const owned = &native.experts;
+                 if (zs.clearsY(native.world, native.rank)) try self.stream.d.check(self.stream.d.api.cuMemsetD8Async(s.y, 0, pairs * dims * 4, self.stream.handle), "cuMemsetD8Async");
++                // the tile by the row count: the prompt tiles have the decode form's sums (fewer rows read faster here)
+                 const pt = nvfp4_tile.size(n);
 -                // prompt rows' slot rows in bf16 (TF_FLASHNEXT_MOE_B16=1): half their bytes written here and read back
 -                // (lone passes alone: a shared round's windows keep the decode form's fp32 slots, concurrent == alone)
 -                const b16 = self.b16_ok and self.lanes.len == 0 and pt != 16 and native.world == 1 and moeB16();
@@ -100,9 +103,8 @@ index 7b7094ea..1bca06f2 100644
 +                const b16 = self.b16_ok and self.lanes.len == 0 and self.hooks.prompt and native.world == 1 and moeB16();
                  try self.k.router.route(self.stream, s.picks, pairs, e, pt, plan);
                  const items = cuda.grouped.maxItems(pairs, e, pt);
-                 const run = if (pt == 16) &cuda.experts.Nvfp4Experts.run else &cuda.experts.Nvfp4Experts.runFact;
-@@ -558,10 +570,10 @@ pub fn Pass(comptime Tri: type) type {
-                 try run(&self.k.nvfp4, self.stream, if (b16) .down_bf16 else .down_f32, .{ .x = s.moe_act, .stride = owned.width }, owned.view(), plan, s.y, items, experts_n);
+                 try nvfp4_tile.run(pt)(&self.k.nvfp4, self.stream, .up, .{ .x = s.mixed, .stride = dims, .slots = slots }, owned.view(), plan, s.moe_act, items, experts_n);
+                 try nvfp4_tile.run(pt)(&self.k.nvfp4, self.stream, if (b16) .down_bf16 else .down_f32, .{ .x = s.moe_act, .stride = owned.width }, owned.view(), plan, s.y, items, experts_n);
                  if (native.rank == 0) {
                      const glue = self.tri.own orelse return error.NativeGlueRequired;
 -                    try self.k.nativeMatmul(self.stream, s.mixed, dims, n, native.shared[0].native.?, s.shared_gate, s.native_part, .bf16);
@@ -116,7 +118,7 @@ index 7b7094ea..1bca06f2 100644
                  }
                  if (native.world != 1) {
 diff --git a/zig/src/families/flashnext/cuda_batch_state.zig b/zig/src/families/flashnext/cuda_batch_state.zig
-index 12936448..d5ee0317 100644
+index 5d62f6f9..96d48763 100644
 --- a/zig/src/families/flashnext/cuda_batch_state.zig
 +++ b/zig/src/families/flashnext/cuda_batch_state.zig
 @@ -160,6 +160,10 @@ pub const Hooks = struct {
@@ -151,10 +153,10 @@ index 12936448..d5ee0317 100644
          return k.native_lane.matmulOut(s, x, ldx, m, w, y, out, part);
      }
 diff --git a/zig/src/families/flashnext/cuda_lanes.zig b/zig/src/families/flashnext/cuda_lanes.zig
-index 24a36551..3294180f 100644
+index dc36fc55..66eb587a 100644
 --- a/zig/src/families/flashnext/cuda_lanes.zig
 +++ b/zig/src/families/flashnext/cuda_lanes.zig
-@@ -354,8 +354,8 @@ pub fn Namespace(comptime Tri: type) type {
+@@ -364,8 +364,8 @@ pub fn Namespace(comptime Tri: type) type {
                  if (l.draft) |*d| {
                      try self.ops().prefillChunk(&l.seq, d, ids, at, stop);
                  } else if (self.ranks) |r| {
@@ -166,7 +168,7 @@ index 24a36551..3294180f 100644
                  if (!last and std.mem.indexOfScalar(u32, s.reuse.marks, @intCast(stop)) != null) {
                      if (s.reuse.hook) |k| k.at(k.ptr, s, @intCast(stop));
 diff --git a/zig/src/families/flashnext/cuda_mtp_ops.zig b/zig/src/families/flashnext/cuda_mtp_ops.zig
-index 846617a8..d0a9e42b 100644
+index cdf8a327..e3310dfb 100644
 --- a/zig/src/families/flashnext/cuda_mtp_ops.zig
 +++ b/zig/src/families/flashnext/cuda_mtp_ops.zig
 @@ -124,7 +124,7 @@ pub fn Ops(comptime Tri: type) type {
@@ -204,3 +206,23 @@ index a0e82dca..58c3498d 100644
          return 1;
      }
      // from 64 rows the prompt tile (flashnext_fact.cu), bit for bit the 16-row lane tile
+diff --git a/zig/src/families/flashnext/cuda_zero_slice.zig b/zig/src/families/flashnext/cuda_zero_slice.zig
+index 0a082e63..d8d2438c 100644
+--- a/zig/src/families/flashnext/cuda_zero_slice.zig
++++ b/zig/src/families/flashnext/cuda_zero_slice.zig
+@@ -11,12 +11,13 @@ pub fn spends(native: bool, sk: usize, m: usize, n: usize, cap: usize) bool {
+ }
+ 
+ /// Pass.lane into s.part: spends the zero slice as it must; `zero` and native: one slice, no clears (1), else null.
+-pub fn lane(k: *const parts.Kernels, stream: cuda.Stream, s: *parts.Scratch, zero: bool, x: u64, w: wt.Q4, part: u64, m: usize, sk: usize) !?usize {
++/// `prompt`: prompt rows, the prompt tile at any count (Kernels.nativeMatmul).
++pub fn lane(k: *const parts.Kernels, stream: cuda.Stream, s: *parts.Scratch, zero: bool, x: u64, w: wt.Q4, part: u64, m: usize, sk: usize, prompt: bool) !?usize {
+     if (part != s.part) return null;
+     if (spends(w.native != null, sk, m, w.n, s.cap)) s.part_zero = false;
+     const native = w.native orelse return null;
+     if (!zero or sk == 1) return null;
+-    try k.native_lane.matmulF32(stream, x, w.k, m, native, part, s.native_part);
++    try k.nativeMatmul(stream, x, w.k, m, native, part, s.native_part, .f32, prompt);
+     return 1;
+ }
+ 

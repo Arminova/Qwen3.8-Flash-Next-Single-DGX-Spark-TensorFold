@@ -1,8 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Armin <2369138+Arminova@users.noreply.github.com>
 Date: Sun, 25 Oct 2026 19:28:40 +0000
-Subject: [PATCH 08/11] core lanes: burst admission, requests sent together
- start in lockstep
+Subject: [PATCH 1/4] core lanes: burst admission, requests sent together start
+ in lockstep
 
 An idle engine holds a first arrival for TENSORFOLD_ADMIT_WAIT_MS (default 5, 0 turns it off) for requests
 sent with it. When two or more wait, every one is admitted before any launches (so none takes the lone
@@ -12,16 +12,16 @@ in lockstep and share each round's expert work.
 Same bits per stream (scheduling only): concurrent == alone 28/28 on Flash-Next. GB10, Flash-Next FP4-Local,
 four identical greedy streams: code 165 -> 236 tok/s, chat 119 -> 166; mixed load unchanged.
 ---
- zig/src/core/lane_host.zig       | 21 +++++++++--
+ zig/src/core/lane_host.zig       | 15 +++++++-
  zig/src/core/lane_host_admit.zig | 61 ++++++++++++++++++++++++++++++++
  zig/src/core/lane_job.zig        |  1 +
- 3 files changed, 81 insertions(+), 2 deletions(-)
+ 3 files changed, 76 insertions(+), 1 deletion(-)
 
 diff --git a/zig/src/core/lane_host.zig b/zig/src/core/lane_host.zig
-index 68a0ae0f..7ec97ab8 100644
+index 9f724364..b04361fb 100644
 --- a/zig/src/core/lane_host.zig
 +++ b/zig/src/core/lane_host.zig
-@@ -306,6 +306,7 @@ pub const LaneHost = struct {
+@@ -308,6 +308,7 @@ pub const LaneHost = struct {
          };
          const job = h.queued.orderedRemove(at);
          job.noteAdmission();
@@ -29,14 +29,10 @@ index 68a0ae0f..7ec97ab8 100644
          job.seq = h.admissions;
          h.admissions += 1;
          h.admitted.append(h.gpa, job) catch {
-@@ -363,7 +364,21 @@ pub const LaneHost = struct {
-     /// The next filling job's next prompt chunk: the other streams' rounds run between chunks, not after the prompt.
-     fn fillOne(h: *LaneHost) void {
-         if (h.filling.items.len == 0) return;
--        const at = fill.next(h);
-+        h.fillAt(fill.next(h));
-+    }
-+
+@@ -362,6 +363,16 @@ pub const LaneHost = struct {
+         };
+     }
+ 
 +    /// A burst's prompts (admit.burst) all go in before the next round, so its streams start in lockstep.
 +    fn fillBurst(h: *LaneHost) void {
 +        while (true) {
@@ -47,19 +43,17 @@ index 68a0ae0f..7ec97ab8 100644
 +        }
 +    }
 +
-+    /// Filling job `at`'s next prompt chunk; done, it is prefilled and delivered.
-+    fn fillAt(h: *LaneHost, at: usize) void {
+     /// Filling job `at`'s next prompt chunk: the other streams' rounds run between chunks, not after the prompt.
+     pub fn fillAt(h: *LaneHost, at: usize) void {
          const job = h.filling.items[at];
-         const first = !job.fill_began;
-         job.fill_began = true;
-@@ -528,8 +543,10 @@ pub const LaneHost = struct {
+@@ -528,8 +539,10 @@ pub const LaneHost = struct {
              rows_host.answer(h);
              scoring.answer(h);
              learn.refuse(h);
 -            while (h.admitOne()) {}
 +            if (admit.holdBurst(h)) continue; // an idle engine waits briefly for requests sent together
 +            if (!admit.burst(h)) while (h.admitOne()) {};
-             h.fillOne();
+             fill.run(h);
 +            h.fillBurst();
              h.core.sweep() catch |err| {
                  ends.failAll(h, @errorName(err));

@@ -1,4 +1,4 @@
-TensorFold base: v1.1.4 (eab8582819688325e371907e4706e1c602b8a273)
-Branch: perf/flashnext-gb10 (dd910bbcdc65a5aded77ed780b056a1e4ba61aec)
-Made: 2026-10-25 22:17:54 UTC
+TensorFold base: v1.1.5 (84e0d560303d85c50becb730720c04a56e38abe5)
+Branch: perf/flashnext-gb10-115 (9034e159f9a17157fc5d482702a16e4de3c3b16a)
+Made: 2026-10-25 23:12:56 UTC
 Apply: git -C <tensorfold checkout of the base> am --3way patches/*.patch

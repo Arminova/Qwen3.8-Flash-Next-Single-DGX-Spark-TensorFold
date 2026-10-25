@@ -4,17 +4,17 @@ Qwen3.8-Flash-Next (a mixture of experts with 176B parameters) served on **one**
 [TensorFold](https://github.com/ashhart/TensorFold)'s native engine, tuned for the GB10. OpenAI-compatible API,
 thinking on, the checkpoint's own MTP drafts, 4 streams of 65,536 tokens (or 5 of 262,144 with the FP8 cache).
 
-This repository is TensorFold 1.1.4 plus patches: three FP4-Local pull requests by @jschmied (landed on TensorFold's
-main after 1.1.4, not in a release yet), and our own work for the GB10 (prompt and decode paths, the loader, an
-MXFP8 language-model head, an optional FP8 KV cache, and admission of requests that arrive together). It serves
-NVIDIA's public FP4-Local checkpoint as published.
+This repository is TensorFold 1.1.5 plus four patches of our own for the GB10: prompt and decode paths, the loader,
+an MXFP8 language-model head, an optional FP8 KV cache, admission of requests that arrive together, and two fixes.
+1.1.5 already carries @jschmied's FP4-Local pull requests. It serves NVIDIA's public FP4-Local checkpoint as
+published.
 
 ## Numbers
 
 Measured on one DGX Spark (GB10, 128 GB), checkpoint below, thinking off. "Ours" is this repository's build
 (bf16 cache = the default, FP8 = `KV=fp8`). The other two columns were measured by us on the same machine with
-the same tools: **Stock TF 1.1.4** is TensorFold 1.1.4 before our patches (with the same three PRs and the same two
-settings, `TF_FLASHNEXT_DRAFT_HEAD=affine4` and `TF_FLASHNEXT_CHUNK=4096`), and [Mia's TensorFold recipe](https://github.com/MiaAI-Lab/Qwen3.8-Flash-Next-Single-DGX-Spark-TensorFold)
+the same tools: **Stock TF 1.1.5** is TensorFold 1.1.5 before our patches (with the same two settings,
+`TF_FLASHNEXT_DRAFT_HEAD=affine4` and `TF_FLASHNEXT_CHUNK=4096`), and [Mia's TensorFold recipe](https://github.com/MiaAI-Lab/Qwen3.8-Flash-Next-Single-DGX-Spark-TensorFold)
 at `656879f` with its own settings (262,144 x 5, FP8 cache).
 
 A greedy request measures one reply. When a change rounds differently, the reply's text changes, and so does how
@@ -25,7 +25,7 @@ the same time per round. The first two tables average many texts; compare those 
 chat prompt, temperature 1.0, its own seed, 256 tokens, 3 reps; at 2 and 4 streams, the rate while every stream is
 generating. The closest of these to real use.
 
-| Streams | Ours, bf16 | Ours, FP8 | Stock TF 1.1.4 | Mia's recipe |
+| Streams | Ours, bf16 | Ours, FP8 | Stock TF 1.1.5 | Mia's recipe |
 |---:|---:|---:|---:|---:|
 | 1 | **75.1** | 73.6 | 69.5 | 65.0 |
 | 2 | **91.4** | 87.2 | 80.2 | 81.4 |
@@ -44,7 +44,7 @@ generating. The closest of these to real use.
 **One reply each (tok/s)** — greedy, 256 tokens: one request (`tools/bench_openai.py`, median of 3), and N identical
 requests sent at once (`tools/bench_concurrent.py`, all streams together ¹)
 
-| | Ours, bf16 | Ours, FP8 | Stock TF 1.1.4 | Mia's recipe |
+| | Ours, bf16 | Ours, FP8 | Stock TF 1.1.5 | Mia's recipe |
 |---|---:|---:|---:|---:|
 | Code (`fibonacci-raw`), 1 request | **81.5** | 75.9 | 73.2 | 67.8 |
 | Chat (`gpu-chat-no-think`), 1 request | 49.7 | 46.9 | 45.3 | **50.9** |
@@ -57,7 +57,7 @@ expert reads; sent 500 ms apart, Mia's recipe did 127.9 / 103.6 and an earlier b
 
 **Prompts (tok/s)** — `tools/pptg_bench.py`, a fresh text per size so no cache helps
 
-| Prompt tokens | Ours, bf16 | Ours, FP8 | Stock TF 1.1.4 | Mia's recipe |
+| Prompt tokens | Ours, bf16 | Ours, FP8 | Stock TF 1.1.5 | Mia's recipe |
 |---:|---:|---:|---:|---:|
 | ~3,900 | 2,282 | **2,327** | 1,593 | 2,140 |
 | ~15,300 | 2,292 | **2,331** | 1,623 | 2,166 |
@@ -106,7 +106,7 @@ checks are from the build these patches make.
 - Every change was measured against the previous build on the same machine. Changes meant to be exact were checked
   with reply hashes (`tools/same.py`: greedy and seeded-sampled replies on 300 to 15,000-token prompts, prompts in
   `tools/prompts/`).
-- Replies are **not** bit for bit those of stock TensorFold 1.1.4. Four changes round differently: the MXFP8 prompt
+- Replies are **not** bit for bit those of stock TensorFold 1.1.5. Four changes round differently: the MXFP8 prompt
   tile, bf16 MoE slot rows on prompts, fused multiply-adds in the DeltaNet prompt chain, and the language-model head
   rounded to MXFP8 at load. The task suite above is the check. The last three can be turned off (Settings).
 - The FP8 cache stores keys and values as 8-bit numbers with one power-of-two scale per position and head: lossy by
@@ -139,7 +139,7 @@ Long windows: `KV=fp8 ./start.sh` serves 5 streams of 262,144 tokens.
 ## The Docker image
 
 `prepare.sh` builds it from [`Dockerfile`](Dockerfile): NVIDIA's CUDA 13.3 image, Zig 0.17.0 (checked by its
-SHA-256), TensorFold `v1.1.4`, [`patches/`](patches/), and `libtfgrammar` (structured output and required tool
+SHA-256), TensorFold `v1.1.5`, [`patches/`](patches/), and `libtfgrammar` (structured output and required tool
 calls) from xgrammar `v0.2.8`. The image holds the server and that library; the checkpoint stays on your disk,
 mounted read-only. Its `tf.patches` label names the patches it was built from, and `prepare.sh` rebuilds when they
 change.
@@ -170,12 +170,12 @@ Engine switches for `EXTRA_ENV` (all on by default; each restores TensorFold's b
 
 ## How it works
 
-- **Engine.** TensorFold's Zig engine on one GPU. [`patches/`](patches/) applies to TensorFold `v1.1.4`
-  ([`patches/BASE`](patches/BASE) names the commit): 0001-0007 are @jschmied's FP4-Local pull requests #1143, #1171
-  and #1164 (NVFP4 experts on prompt tiles, decode half tiles, hyper-connection kernels), rebased onto 1.1.4;
-  0008 admits requests sent together as one group; 0009 is our GB10 tuning (each change named in its message);
-  0010 makes a prompt's rounding independent of where its fill is split (the prompt cache, chunks); 0011 fixes the
-  first token after a long prompt with `"draft": false` (its last row read stale MoE rows).
+- **Engine.** TensorFold's Zig engine on one GPU. [`patches/`](patches/) applies to TensorFold `v1.1.5`
+  ([`patches/BASE`](patches/BASE) names the commit): 0001 admits requests sent together as one group; 0002 is our
+  GB10 tuning (each change named in its message); 0003 makes a prompt's rounding independent of where its fill is
+  split (the prompt cache, chunks); 0004 fixes the first token after a long prompt with `"draft": false` (its last
+  row read stale MoE rows). The FP8 cache stays off with 1.1.5's KV paging (`TF_FLASHNEXT_KV_PAGES`): the two are
+  refused together.
 - **Prompts.** 4,096-row chunks, MXFP8 and bf16 prompt tiles, fused hyper-connection kernels, bf16 MoE slot rows,
   and fused multiply-adds in the DeltaNet chain.
 - **Decode.** CUDA graphs for verify windows and draft steps, sampled streams drafted together, GPU top-k draws,
@@ -194,8 +194,7 @@ Engine switches for `EXTRA_ENV` (all on by default; each restores TensorFold's b
 
 ## Upstream
 
-The three PRs in 0001-0007 landed on TensorFold's main on 2026-10-25, after 1.1.4 (with the maintainer's fix-ups; the
-patches here are the PRs as submitted, rebased onto 1.1.4). Our own changes are not offered upstream yet. Until a
+@jschmied's FP4-Local pull requests are in TensorFold 1.1.5. Our own changes are not in TensorFold yet; until a
 release carries them, this repository is the way to run them.
 
 ## Credits

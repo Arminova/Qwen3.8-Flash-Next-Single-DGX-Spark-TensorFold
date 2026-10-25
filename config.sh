@@ -2,10 +2,10 @@
 # with an environment variable of the same name (or put it in a .env file next to this one).
 [ -f "$(dirname "${BASH_SOURCE[0]}")/.env" ] && . "$(dirname "${BASH_SOURCE[0]}")/.env"
 
-# TensorFold, the engine our patches apply to (release 1.1.4)
+# TensorFold, the engine our patches apply to (release 1.1.5)
 TF_REPO=${TF_REPO:-https://github.com/ashhart/TensorFold.git}
-TF_REF=${TF_REF:-v1.1.4}
-TF_COMMIT=${TF_COMMIT:-eab8582819688325e371907e4706e1c602b8a273}
+TF_REF=${TF_REF:-v1.1.5}
+TF_COMMIT=${TF_COMMIT:-84e0d560303d85c50becb730720c04a56e38abe5}
 # libtfgrammar (structured output and required tool calls) is built against this xgrammar release
 XGRAMMAR_REPO=${XGRAMMAR_REPO:-https://github.com/mlc-ai/xgrammar.git}
 XGRAMMAR_REF=${XGRAMMAR_REF:-v0.2.8}

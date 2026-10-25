@@ -1,8 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Armin <2369138+Arminova@users.noreply.github.com>
 Date: Sun, 25 Oct 2026 21:35:58 +0000
-Subject: [PATCH 11/11] Flash Next CUDA: an undrafted prompt's last row keeps
- its bf16 slot rows
+Subject: [PATCH 4/4] Flash Next CUDA: an undrafted prompt's last row keeps its
+ bf16 slot rows
 
 A prompt pass that ends in `.last` without the MTP streams (a request with "draft": false) moves the last
 row's write-back inputs to row 0 before the head. Its MoE slot rows were copied as fp32 rows; after a prompt
