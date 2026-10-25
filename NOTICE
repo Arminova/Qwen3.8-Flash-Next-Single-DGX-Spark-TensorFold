@@ -1,0 +1,27 @@
+Qwen3.8-Flash-Next on one DGX Spark (TensorFold)
+Copyright 2026 Arminova
+
+This repository is licensed under the Apache License, Version 2.0 (LICENSE).
+
+It contains patches to TensorFold (https://github.com/ashhart/TensorFold), which carries this notice:
+
+  TensorFold
+  Copyright 2026 TensorFold contributors
+  https://github.com/ashhart/TensorFold
+
+  TensorFold is licensed under the Apache License, Version 2.0 (LICENSE) from 0.6.0.
+  Releases up to 0.5.0 were MIT-licensed, and code written before 0.6.0 keeps its
+  MIT notice in LICENSES/MIT.txt. Third-party code and its licenses are listed in
+  THIRD_PARTY_NOTICES.md.
+
+The patches change TensorFold's source as described in each patch's message. Patches 0001-0007 are by their
+author, Jürgen Schmied (@jschmied), from TensorFold pull requests #1143, #1171 and #1164.
+
+The image prepare.sh builds also contains libtfgrammar, built from xgrammar (https://github.com/mlc-ai/xgrammar,
+Apache License 2.0).
+
+tools/prompts holds excerpts of TensorFold's documentation (Apache License 2.0) and the text of the GNU General
+Public License version 3, used only as benchmark prompts.
+
+The model weights are not part of this repository; prepare.sh downloads them from Hugging Face under their own
+license (see CREDITS.md).

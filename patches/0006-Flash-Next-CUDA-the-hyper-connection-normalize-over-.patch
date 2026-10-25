@@ -1,0 +1,290 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?J=C3=BCrgen=20Schmied?=
+ <600316+jschmied@users.noreply.github.com>
+Date: Wed, 21 Oct 2026 07:12:58 +0200
+Subject: [PATCH 6/9] Flash Next CUDA: the hyper-connection normalize over
+ 256-column slices
+
+fn_hc_normalize ran one block a (row, stream): at one decode row four blocks scaled 10,240 values
+while thread 0 summed the stream's partials. fn_hc_normalize_cols takes a block a (row, stream,
+256-column slice); each block sums the same partials in the same order, so every value's bits are
+fn_hc_normalize's, with forty blocks a decode row. The old kernel stays (the contract's baseline).
+
+Contract: replaces fn_hc_normalize bit for bit (gates 1-3; gate 4 states the bf16 sum it cannot
+show through the root), its control the new kernel with a doubled epsilon (red at gate 3).
+Served (FP4-Local, no drafts): 23.83 / 23.83 tok/s one stream (main 23.58 / 23.66), replies equal.
+
+(cherry picked from commit 388acff677218fab6256734927bd23f1bd4c9749)
+---
+ zig/kernels/cuda/flashnext_hc.cu              |  17 ++
+ .../core/contract/flashnext_cuda_records.zig  |   2 +
+ zig/src/families/flashnext/cuda_glue.zig      |   4 +
+ zig/tests/cuda/contract_hc_normalize.zig      | 163 ++++++++++++++++++
+ zig/tests/cuda/contract_tests.zig             |   5 +
+ 5 files changed, 191 insertions(+)
+ create mode 100644 zig/tests/cuda/contract_hc_normalize.zig
+
+diff --git a/zig/kernels/cuda/flashnext_hc.cu b/zig/kernels/cuda/flashnext_hc.cu
+index aafec58a..4f14132e 100644
+--- a/zig/kernels/cuda/flashnext_hc.cu
++++ b/zig/kernels/cuda/flashnext_hc.cu
+@@ -450,6 +450,23 @@ extern "C" __global__ void fn_hc_normalize(const __nv_bfloat16* H, const float*
+     }
+ }
+ 
++// fn_hc_normalize a block a (row, stream, 256-column slice): each block sums the stream the same way, so the same bits.
++extern "C" __global__ void __launch_bounds__(256) fn_hc_normalize_cols(const __nv_bfloat16* H, const float* PSS, const float* SCALE,
++                                                                       __nv_bfloat16* OUT, float eps, int D, int SS) {
++    __shared__ float rinv;
++    const int r = blockIdx.x, stream = blockIdx.y, nc = D / 256;
++    if (threadIdx.x == 0) {
++        float total = 0.0f;
++        for (int c = 0; c < nc; ++c) total = __fadd_rn(total, PSS[(static_cast<long long>(r) * nc + c) * SS + stream]);
++        rinv = __fdiv_rn(1.0f, __fsqrt_rn(__fadd_rn(__fdiv_rn(total, static_cast<float>(D)), eps)));
++    }
++    __syncthreads();
++    const int d = blockIdx.z * 256 + threadIdx.x;
++    const int col = stream * D + d;
++    const long long at = static_cast<long long>(r) * SS * D + col;
++    OUT[at] = __float2bfloat16_rn(__fmul_rn(__fmul_rn(bf(H[at]), rinv), SCALE[col]));
++}
++
+ // Dense up-projection values are already BF16: sigmoid, product and stream mean keep their original rounding seams.
+ extern "C" __global__ void fn_hc_dense_mix(const __nv_bfloat16* UP, const __nv_bfloat16* NORMED,
+                                             __nv_bfloat16* MIXED, float* XSM, int D, int SS) {
+diff --git a/zig/src/core/contract/flashnext_cuda_records.zig b/zig/src/core/contract/flashnext_cuda_records.zig
+index d88c035d..0034d952 100644
+--- a/zig/src/core/contract/flashnext_cuda_records.zig
++++ b/zig/src/core/contract/flashnext_cuda_records.zig
+@@ -14,8 +14,10 @@ pub const cuda = [_]CudaRecord{
+     .{ .launch = .{ .name = "flashnext_batch fn_gdn_rows", .symbol = "fn_gdn_rows", .image = "flashnext_batch", .threads = 128 }, .usage = .{ .{ .regs = 64, .static = 0, .bound = 128 }, .{ .regs = 64, .static = 0, .bound = 128 }, .{ .regs = 64, .static = 0, .bound = 128 }, .{ .regs = 64, .static = 0, .bound = 128 }, .{ .regs = 64, .static = 0, .bound = 128 } } },
+     .{ .launch = .{ .name = "flashnext_batch fn_gdn_rows_to", .symbol = "fn_gdn_rows_to", .image = "flashnext_batch", .threads = 128 }, .usage = .{ .{ .regs = 64, .static = 0, .bound = 128 }, .{ .regs = 64, .static = 0, .bound = 128 }, .{ .regs = 64, .static = 0, .bound = 128 }, .{ .regs = 64, .static = 0, .bound = 128 }, .{ .regs = 64, .static = 0, .bound = 128 } } },
+     .{ .launch = .{ .name = "flashnext_hc fn_hc_dense_mix", .symbol = "fn_hc_dense_mix", .image = "flashnext_hc", .threads = 32 }, .usage = .{ .{ .regs = 22, .static = 128, .bound = 0 }, .{ .regs = 36, .static = 128, .bound = 0 }, .{ .regs = 36, .static = 128, .bound = 0 }, .{ .regs = 36, .static = 128, .bound = 0 }, .{ .regs = 36, .static = 128, .bound = 0 } } },
++    .{ .launch = .{ .name = "flashnext_hc fn_hc_dense_mix8", .symbol = "fn_hc_dense_mix8", .image = "flashnext_hc", .threads = 256 }, .usage = .{ .{ .regs = 32, .static = 1024, .bound = 256 }, .{ .regs = 34, .static = 1024, .bound = 256 }, .{ .regs = 34, .static = 1024, .bound = 256 }, .{ .regs = 35, .static = 1024, .bound = 256 }, .{ .regs = 34, .static = 1024, .bound = 256 } } },
+     .{ .launch = .{ .name = "flashnext_hc fn_hc_down", .symbol = "fn_hc_down", .image = "flashnext_hc", .threads = 128, .dynamic = 11136 }, .usage = .{ .{ .regs = 56, .static = 64, .bound = 128 }, .{ .regs = 54, .static = 64, .bound = 128 }, .{ .regs = 54, .static = 64, .bound = 128 }, .{ .regs = 60, .static = 64, .bound = 128 }, .{ .regs = 60, .static = 64, .bound = 128 } } },
+     .{ .launch = .{ .name = "flashnext_hc fn_hc_normalize", .symbol = "fn_hc_normalize", .image = "flashnext_hc", .threads = 256 }, .usage = .{ .{ .regs = 32, .static = 16, .bound = 0 }, .{ .regs = 40, .static = 16, .bound = 0 }, .{ .regs = 40, .static = 16, .bound = 0 }, .{ .regs = 40, .static = 16, .bound = 0 }, .{ .regs = 38, .static = 16, .bound = 0 } } },
++    .{ .launch = .{ .name = "flashnext_hc fn_hc_normalize_cols", .symbol = "fn_hc_normalize_cols", .image = "flashnext_hc", .threads = 256 }, .usage = .{ .{ .regs = 32, .static = 16, .bound = 256 }, .{ .regs = 40, .static = 16, .bound = 256 }, .{ .regs = 40, .static = 16, .bound = 256 }, .{ .regs = 40, .static = 16, .bound = 256 }, .{ .regs = 38, .static = 16, .bound = 256 } } },
+     .{ .launch = .{ .name = "flashnext_hc fn_hc_reduce_act", .symbol = "fn_hc_reduce_act", .image = "flashnext_hc", .threads = 352 }, .usage = .{ .{ .regs = 32, .static = 4096, .bound = 1024 }, .{ .regs = 63, .static = 4096, .bound = 1024 }, .{ .regs = 63, .static = 4096, .bound = 1024 }, .{ .regs = 58, .static = 4096, .bound = 1024 }, .{ .regs = 58, .static = 4096, .bound = 1024 } } },
+     .{ .launch = .{ .name = "flashnext_hc fn_hc_upmix", .symbol = "fn_hc_upmix", .image = "flashnext_hc", .threads = 256, .dynamic = 18688 }, .usage = .{ .{ .regs = 69, .static = 2048, .bound = 256 }, .{ .regs = 64, .static = 2048, .bound = 256 }, .{ .regs = 64, .static = 2048, .bound = 256 }, .{ .regs = 78, .static = 2048, .bound = 256 }, .{ .regs = 78, .static = 2048, .bound = 256 } } },
+     .{ .launch = .{ .name = "flashnext_hc fn_hc_writeback0", .symbol = "fn_hc_writeback0", .image = "flashnext_hc", .threads = 256 }, .usage = .{ .{ .regs = 30, .static = 256, .bound = 256 }, .{ .regs = 30, .static = 256, .bound = 256 }, .{ .regs = 30, .static = 256, .bound = 256 }, .{ .regs = 33, .static = 256, .bound = 256 }, .{ .regs = 37, .static = 256, .bound = 256 } } },
+diff --git a/zig/src/families/flashnext/cuda_glue.zig b/zig/src/families/flashnext/cuda_glue.zig
+index 0918d9e0..d6c5b00a 100644
+--- a/zig/src/families/flashnext/cuda_glue.zig
++++ b/zig/src/families/flashnext/cuda_glue.zig
+@@ -32,6 +32,7 @@ const Fns = struct {
+     wb_moe: cuda.Function,
+     wb_slices: cuda.Function,
+     normalize: cuda.Function,
++    normalize_cols: cuda.Function, // fn_hc_normalize's bits over 256-column slices (dims a multiple of 256)
+     dense_mix: cuda.Function,
+     shared_swiglu: cuda.Function,
+     shared_scatter: cuda.Function,
+@@ -108,6 +109,7 @@ pub const Glue = struct {
+             .wb_moe = try g.hc.function("fn_hc_writeback_moe"),
+             .wb_slices = try g.hc.function("fn_hc_writeback_slices"),
+             .normalize = try g.hc.function("fn_hc_normalize"),
++            .normalize_cols = try g.hc.function("fn_hc_normalize_cols"),
+             .dense_mix = try g.hc.function("fn_hc_dense_mix"),
+             .shared_swiglu = try g.hc.function("fn_shared_swiglu"),
+             .shared_scatter = try g.hc.function("fn_shared_scatter"),
+@@ -261,6 +263,8 @@ pub const Glue = struct {
+         args.add(eps);
+         args.add(int(dims));
+         args.add(int(streams));
++        // a block a 256-column slice: the same stream sum in each, so fn_hc_normalize's bits with more blocks
++        if (dims % 256 == 0) return cuda.launch.launch(g.f.normalize_cols, .{ .grid = .{ .x = @intCast(rows), .y = @intCast(streams), .z = @intCast(dims / 256) }, .block = .{ .x = 256 } }, s, &args);
+         try cuda.launch.launch(g.f.normalize, .{ .grid = .{ .x = @intCast(rows), .y = @intCast(streams) }, .block = .{ .x = 256 } }, s, &args);
+     }
+ 
+diff --git a/zig/tests/cuda/contract_hc_normalize.zig b/zig/tests/cuda/contract_hc_normalize.zig
+new file mode 100644
+index 00000000..9ef89852
+--- /dev/null
++++ b/zig/tests/cuda/contract_hc_normalize.zig
+@@ -0,0 +1,163 @@
++//! fn_hc_normalize_cols under the contract: fn_hc_normalize's bits; control: a doubled epsilon posing as it.
++const std = @import("std");
++const cuda = @import("cuda");
++const core = @import("core");
++const rig_ = @import("contract_rig.zig");
++const c = core.contract.spec;
++const g = core.contract.gates;
++const contract = core.contract;
++
++pub const Kind = enum { cols, control };
++
++const rule = "as fn_hc_normalize gives them: NaN and infinite rows, a NaN stream sum, a zero sum (infinite inverse)";
++const eps: f32 = 1e-6;
++
++/// The stream sum (nc fp32 adds), its root and inverse, two products and the bf16 rounding.
++fn depth(s: c.Shape) usize {
++    return s.n / 256 + 6;
++}
++
++pub fn spec(kind: Kind) c.Spec {
++    return .{
++        .name = if (kind == .cols) "cuda Flash Next fn_hc_normalize_cols (replaces fn_hc_normalize)" else "control: fn_hc_normalize_cols with a doubled epsilon posing as fn_hc_normalize",
++        .accum = .f32,
++        .depth = depth,
++        .ops = 4,
++        .out = .bf16,
++        .replaces = "fn_hc_normalize",
++        .nan = .{ .stated = rule },
++        .tiles = .{ .{ .size = 1 }, .{ .size = 256, .step = 256, .min = 256 }, .{} },
++        .served = &.{ .{ .rows = 1, .n = 2560, .k = 4 }, .{ .rows = 17, .n = 2560, .k = 4 }, .{ .rows = 3, .n = 512, .k = 4 } },
++        // the only sum is nc fp32 partials; through the root a bf16 sum's error falls under the output's rounding
++        .sums = .{ .f16 = 100, .bf16 = 0, .why = "a bf16 sum of the stream partials loses less than the bf16 output rounding after the root" },
++    };
++}
++
++pub const Normalize = struct {
++    rig: rig_.Rig,
++    kind: Kind,
++    cols_fn: cuda.Function,
++    old_fn: cuda.Function,
++    arena: ?std.heap.ArenaAllocator = null,
++    shape: c.Shape = undefined,
++    h: []u16 = &.{},
++    pss: []f32 = &.{},
++    scale: []f32 = &.{},
++    dh: u64 = 0,
++    dpss: u64 = 0,
++    dscale: u64 = 0,
++    out: u64 = 0,
++    base: u64 = 0,
++    msg: [160]u8 = undefined,
++
++    pub fn deinit(self: *Normalize) void {
++        if (self.arena) |*arena| arena.deinit();
++        self.rig.deinit();
++    }
++
++    const vt = g.hooks(Normalize);
++
++    pub fn kernel(self: *Normalize) g.Kernel {
++        return .{ .spec = spec(self.kind), .ctx = self, .vt = &vt, .control = if (self.kind == .control) .shapes else null };
++    }
++
++    fn streams(self: *const Normalize) usize {
++        return self.shape.k;
++    }
++
++    pub fn prepare(self: *Normalize, shape: c.Shape, fill: g.Fill, seed: u64) !bool {
++        if (shape.rows == 0 or shape.rows > 64 or shape.n == 0 or shape.n % 256 != 0 or shape.k == 0 or shape.k > 8) return false;
++        self.rig.reset();
++        if (self.arena) |*arena| arena.deinit();
++        self.arena = std.heap.ArenaAllocator.init(self.rig.gpu.gpa);
++        const a = self.arena.?.allocator();
++        self.shape = shape;
++        const nc = shape.n / 256;
++        const wide = shape.n * shape.k;
++        self.h = try a.alloc(u16, shape.rows * wide);
++        self.pss = try a.alloc(f32, shape.rows * nc * shape.k);
++        self.scale = try a.alloc(f32, wide);
++        var prng = std.Random.DefaultPrng.init(seed);
++        const rng = prng.random();
++        for (self.h) |*b| b.* = c.toBf16(rng.float(f32) * 4 - 2);
++        for (self.scale) |*v| v.* = 0.5 + rng.float(f32);
++        for (self.pss) |*v| v.* = if (fill == .stress) @floatFromInt(65536 + rng.uintLessThan(u32, 65536)) else 0.5 + rng.float(f32) * 256;
++        if (fill == .nonfinite) {
++            self.h[0] = c.toBf16(std.math.nan(f32));
++            if (self.h.len > 2) self.h[1] = c.toBf16(std.math.inf(f32));
++            self.pss[self.pss.len - 1] = std.math.nan(f32);
++            if (shape.rows > 1) @memset(self.pss[0 .. nc * shape.k], 0);
++        }
++        self.dh = try self.rig.input(std.mem.sliceAsBytes(self.h));
++        self.dpss = try self.rig.input(std.mem.sliceAsBytes(self.pss));
++        self.dscale = try self.rig.input(std.mem.sliceAsBytes(self.scale));
++        self.out = try self.rig.output(shape.rows * wide * 2);
++        self.base = try self.rig.scratch(shape.rows * wide * 2);
++        return true;
++    }
++
++    fn launch(self: *Normalize, cols: bool, e: f32, out: u64) !void {
++        var args: cuda.Args = .{};
++        for ([_]u64{ self.dh, self.dpss, self.dscale, out }) |v| args.add(v);
++        args.add(e);
++        args.add(@as(c_int, @intCast(self.shape.n)));
++        args.add(@as(c_int, @intCast(self.streams())));
++        const grid: cuda.launch.Dim3 = if (cols) .{ .x = @intCast(self.shape.rows), .y = @intCast(self.streams()), .z = @intCast(self.shape.n / 256) } else .{ .x = @intCast(self.shape.rows), .y = @intCast(self.streams()) };
++        try cuda.launch.launch(if (cols) self.cols_fn else self.old_fn, .{ .grid = grid, .block = .{ .x = 256 } }, self.rig.s, &args);
++        try self.rig.s.synchronize();
++    }
++
++    pub fn run(self: *Normalize) !void {
++        try self.launch(true, if (self.kind == .control) 2 * eps else eps, self.out);
++    }
++
++    pub fn replaced(self: *Normalize) ![]const u8 {
++        try self.launch(false, eps, self.base);
++        return self.rig.bytes(self.base, self.count() * 2);
++    }
++
++    pub fn check(self: *Normalize, _: g.Gate) !?[]const u8 {
++        const a = self.rig.gpu.gpa;
++        const got = try a.dupe(u8, try self.rig.outputBytes());
++        defer a.free(got);
++        const want = try self.replaced();
++        if (std.mem.indexOfDiff(u8, got, want)) |at| return try std.fmt.bufPrint(&self.msg, "byte {d} of {d} differs from fn_hc_normalize's", .{ at, got.len });
++        for (0..got.len / 2) |i| if (c.classOf(c.read(.bf16, got, i)) != .finite) return null;
++        return try std.fmt.bufPrint(&self.msg, "no output is non-finite: the planted values prove nothing", .{});
++    }
++
++    pub fn count(self: *const Normalize) usize {
++        return self.shape.rows * self.shape.n * self.streams();
++    }
++
++    fn rows(self: *const Normalize, acc: ?c.Accum, order: g.Order, out: []f64, mag: ?[]f64) void {
++        const n = self.shape.n;
++        const ss = self.streams();
++        const nc = n / 256;
++        var t: [64]f64 = undefined;
++        for (0..self.shape.rows) |r| for (0..ss) |st| {
++            for (0..nc) |cc| t[cc] = self.pss[(r * nc + cc) * ss + st];
++            const total = if (acc) |ac| contract.rows.sumIn(ac, order, t[0..nc]) else blk: {
++                var x: f64 = 0;
++                for (t[0..nc]) |v| x += v;
++                break :blk x;
++            };
++            const rinv = 1.0 / @sqrt(total / @as(f64, @floatFromInt(n)) + eps);
++            for (0..n) |d| {
++                const col = st * n + d;
++                const at = r * ss * n + col;
++                const v = @as(f64, c.fromBf16(self.h[at])) * rinv * self.scale[col];
++                out[at] = v;
++                if (mag) |m| m[at] = @abs(v);
++            }
++        };
++    }
++
++    pub fn reference(self: *Normalize, want: []f64, mag: []f64) !void {
++        self.rows(null, .sequential, want, mag);
++    }
++
++    pub fn simulate(self: *Normalize, acc: c.Accum, order: g.Order, out: []f64) !void {
++        self.rows(acc, order, out, null);
++    }
++};
+diff --git a/zig/tests/cuda/contract_tests.zig b/zig/tests/cuda/contract_tests.zig
+index abb02ec9..d6a7b0e8 100644
+--- a/zig/tests/cuda/contract_tests.zig
++++ b/zig/tests/cuda/contract_tests.zig
+@@ -14,6 +14,7 @@ const half_k = @import("contract_lane_half.zig");
+ const wide_k = @import("contract_projection_f32.zig");
+ const rank_k = @import("contract_rank.zig");
+ const writeback_k = @import("contract_flashnext_writeback.zig");
++const hcnorm_k = @import("contract_hc_normalize.zig");
+ const utility_k = @import("contract_utility.zig");
+ const best_k = @import("contract_row_best.zig");
+ const qsa_k = @import("contract_qsa_select.zig");
+@@ -222,6 +223,10 @@ pub fn run(gpu: check.Gpu) !void {
+     }
+     defer for (&writebacks) |*w| w.deinit();
+     for (&writebacks) |*w| try kernels.append(a, w.kernel());
++    var hcnorms: [2]hcnorm_k.Normalize = undefined;
++    for (std.enums.values(hcnorm_k.Kind), &hcnorms) |kind, *x| x.* = .{ .rig = .{ .gpu = gpu, .s = s }, .kind = kind, .cols_fn = try hc.function("fn_hc_normalize_cols"), .old_fn = try hc.function("fn_hc_normalize") };
++    defer for (&hcnorms) |*x| x.deinit();
++    for (&hcnorms) |*x| try kernels.append(a, x.kernel());
+     var batch = try cuda.Module.load(gpu.d, kk.flashnext_batch);
+     defer batch.unload();
+     var sums: [2]utility_k.Sum = undefined;

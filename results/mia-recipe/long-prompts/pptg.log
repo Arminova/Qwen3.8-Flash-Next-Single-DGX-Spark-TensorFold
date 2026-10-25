@@ -1,0 +1,4 @@
+corpus: 515393 chars from 43 files
+{"target": 32768, "prompt_tokens": 31400, "completion_tokens": 128, "ttft_s": 14.69, "pp_tok_s": 2136.9, "tg_tok_s": 43.0}
+{"target": 65536, "prompt_tokens": 63949, "completion_tokens": 128, "ttft_s": 29.77, "pp_tok_s": 2148.3, "tg_tok_s": 40.8}
+{"target": 120000, "prompt_tokens": 132201, "completion_tokens": 128, "ttft_s": 65.42, "pp_tok_s": 2020.9, "tg_tok_s": 40.4}

@@ -1,0 +1,207 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?J=C3=BCrgen=20Schmied?=
+ <600316+jschmied@users.noreply.github.com>
+Date: Wed, 21 Oct 2026 15:00:10 +0200
+Subject: [PATCH 2/9] Flash Next CUDA: one-line comments, runFact in its own
+ file, cuda_batch.zig back to 600 lines
+
+The lean gate's new findings on this branch: multi-line comments folded to one line within 120 columns,
+experts.zig's runFact moved unchanged to experts_fact.zig (re-exported as Nvfp4Experts.runFact), and
+factRows' cache as a file-level optional. nvfp4_experts.cu changes in comments only (sm_121a SASS
+identical); lean_new.py: 0 new.
+
+(cherry picked from commit 1e1f013636a55ea2a6c6d7f3cc5f4a26c0c4d6f0)
+---
+ zig/kernels/cuda/nvfp4_experts.cu            |  7 ++---
+ zig/src/core/contract/nvfp4_fact_records.zig |  3 +-
+ zig/src/cuda/experts.zig                     | 26 ++-------------
+ zig/src/cuda/experts_fact.zig                | 33 ++++++++++++++++++++
+ zig/src/families/flashnext/cuda_batch.zig    | 18 +++++------
+ zig/tests/cuda/contract_nvfp4_fact.zig       | 12 +++----
+ 6 files changed, 49 insertions(+), 50 deletions(-)
+ create mode 100644 zig/src/cuda/experts_fact.zig
+
+diff --git a/zig/kernels/cuda/nvfp4_experts.cu b/zig/kernels/cuda/nvfp4_experts.cu
+index 62ab20eb..8f0bf8da 100644
+--- a/zig/kernels/cuda/nvfp4_experts.cu
++++ b/zig/kernels/cuda/nvfp4_experts.cu
+@@ -175,9 +175,7 @@ __device__ __forceinline__ void mma_z(float (&d)[4], uint32_t a0, uint32_t a1, u
+       : "r"(a0), "r"(a1), "r"(a2), "r"(a3), "r"(b0), "r"(b1), "f"(0.f));
+ }
+ 
+-// Prompt rows, 64 inputs a stage; NT (row tiles a warp) is constant so no branch splits mma. FACT false: one fp32
+-// sum over K of the scaled codes. FACT true: the decode form's factored sums, bit for bit at every row: each
+-// 16-input block's mma of the raw codes from zero, then fma(p, its e4m3 scale, acc), blocks in ascending K.
++// Prompt rows, 64 inputs a stage, NT row tiles a warp. FACT: the decode form's sums (per-16 mma from zero, then fma).
+ template <int M, int EPI, int RT, int WM, int WN, int NT, bool FACT = false>
+ __device__ __forceinline__ void prompt_tiles(const __nv_bfloat16* __restrict__ X, int x_stride, int slots,
+                                              const uint4* __restrict__ W, const float* __restrict__ scale, int KG,
+@@ -369,8 +367,7 @@ TF_NVFP4_PROMPT(tf_nvfp4_prompt_relu2, 1, 1, 8)
+ TF_NVFP4_PROMPT(tf_nvfp4_prompt_swiglu, 2, 2, 4)
+ TF_NVFP4_PROMPT(tf_nvfp4_prompt_down, 1, 3, 8)
+ 
+-// The decode form's factored sums on the prompt tiles (bit-equal to nvfp4_expert_kernel<2, 2, *> and <1, 0, *> at
+-// every row): SwiGLU gate-up to bf16, down to fp32 slot rows.
++// The decode form's factored sums on the prompt tiles, bit for bit: SwiGLU gate-up to bf16, down to fp32 slot rows.
+ #define TF_NVFP4_FACT(NAME, M, EPI, WN)                                                                                \
+   extern "C" __global__ void __launch_bounds__(WN * 32) NAME(                                                        \
+       const __nv_bfloat16* __restrict__ X, int x_stride, int slots, const uint4* __restrict__ W,                     \
+diff --git a/zig/src/core/contract/nvfp4_fact_records.zig b/zig/src/core/contract/nvfp4_fact_records.zig
+index 1bd8a1d2..a3edfa16 100644
+--- a/zig/src/core/contract/nvfp4_fact_records.zig
++++ b/zig/src/core/contract/nvfp4_fact_records.zig
+@@ -1,5 +1,4 @@
+-//! NVFP4 experts' prompt tiles with the decode form's sums (nvfp4_experts.cu's tf_nvfp4_fact_*), in registry.cuda.
+-//! Records from nvcc 13.0.88 cubins (sm_80/86/89/120a/121a, cuobjdump --dump-resource-usage).
++//! tf_nvfp4_fact_* (nvfp4_experts.cu) in registry.cuda, from nvcc 13.0.88 cubins (sm_80/86/89/120a/121a).
+ const CudaRecord = @import("registry.zig").CudaRecord;
+ 
+ pub const cuda = [_]CudaRecord{
+diff --git a/zig/src/cuda/experts.zig b/zig/src/cuda/experts.zig
+index 53a39b68..49089cf8 100644
+--- a/zig/src/cuda/experts.zig
++++ b/zig/src/cuda/experts.zig
+@@ -458,30 +458,8 @@ pub const Nvfp4Experts = struct {
+         try launch_.launch(e.prompt_fns[fi], cfg, s, &a);
+     }
+ 
+-    /// SwiGLU gate-up (.up) or fp32 down (.down_f32) on a plan of at most `items` items of promptTile pairs: the
+-    /// decode form's sums (run's bits at every row) on the prompt tiles, which read an expert's weights once an item.
+-    pub fn runFact(e: *const Nvfp4Experts, s: Stream, epi: Epi, in: Rows, l: Layer, p: Plan, out: u64, items: usize, skip: i32) !void {
+-        const gate = epi == .up;
+-        if (epi == .down_bf16 or (gate and l.relu2)) return error.EpilogueNotBuilt;
+-        const nb = (if (gate) l.width else l.dims) / cols;
+-        if (items < 1) return;
+-        var a: launch_.Args = .{};
+-        a.add(in.x);
+-        a.add(@as(i32, @intCast(in.stride)));
+-        a.add(@as(i32, @intCast(if (gate) in.slots else 0)));
+-        a.add(if (gate) l.up else l.down);
+-        a.add(if (gate) l.up_scale else l.down_scale);
+-        a.add(@as(i32, @intCast((if (gate) l.dims else l.width) / 32)));
+-        a.add(@as(i32, @intCast(nb)));
+-        for ([_]u64{ p.items, p.counts, p.members, out }) |v| a.add(v);
+-        a.add(@as(i32, @intCast(if (gate) l.width else l.dims)));
+-        a.add(if (gate) l.limit else @as(f32, 0.0));
+-        a.add(skip);
+-        const fi: usize = if (gate) 0 else 1;
+-        const wn = fact_wn[fi];
+-        const cfg: launch_.Config = .{ .grid = .{ .x = @intCast(items * ((nb + wn - 1) / wn)), .y = 1, .z = 1 }, .block = .{ .x = @intCast(wn * 32), .y = 1, .z = 1 }, .shared = promptSmem(if (gate) 2 else 1, wn) };
+-        try launch_.launch(e.fact_fns[fi], cfg, s, &a);
+-    }
++    /// The decode form's sums on the prompt tiles (experts_fact.zig).
++    pub const runFact = @import("experts_fact.zig").runFact;
+ 
+     /// Bytes of `count` experts' blocks for n outputs from k inputs: [E][n/32][k/32][parts][144] int32.
+     pub fn bytes(count: usize, n: usize, k: usize, parts: usize) usize {
+diff --git a/zig/src/cuda/experts_fact.zig b/zig/src/cuda/experts_fact.zig
+new file mode 100644
+index 00000000..db78e62e
+--- /dev/null
++++ b/zig/src/cuda/experts_fact.zig
+@@ -0,0 +1,33 @@
++//! NVFP4 experts' prompt tiles with the decode form's sums (tf_nvfp4_fact_*); experts.zig re-exports it.
++const launch_ = @import("launch.zig");
++const Stream = @import("stream.zig").Stream;
++const Plan = @import("grouped.zig").Plan;
++const experts = @import("experts.zig");
++const Nvfp4Experts = experts.Nvfp4Experts;
++const Epi = experts.Epi;
++const Rows = experts.Rows;
++const Layer = experts.Layer;
++
++/// SwiGLU gate-up (.up) or fp32 down (.down_f32) on promptTile items: run's bits at every row, weights read once.
++pub fn runFact(e: *const Nvfp4Experts, s: Stream, epi: Epi, in: Rows, l: Layer, p: Plan, out: u64, items: usize, skip: i32) !void {
++    const gate = epi == .up;
++    if (epi == .down_bf16 or (gate and l.relu2)) return error.EpilogueNotBuilt;
++    const nb = (if (gate) l.width else l.dims) / Nvfp4Experts.cols;
++    if (items < 1) return;
++    var a: launch_.Args = .{};
++    a.add(in.x);
++    a.add(@as(i32, @intCast(in.stride)));
++    a.add(@as(i32, @intCast(if (gate) in.slots else 0)));
++    a.add(if (gate) l.up else l.down);
++    a.add(if (gate) l.up_scale else l.down_scale);
++    a.add(@as(i32, @intCast((if (gate) l.dims else l.width) / 32)));
++    a.add(@as(i32, @intCast(nb)));
++    for ([_]u64{ p.items, p.counts, p.members, out }) |v| a.add(v);
++    a.add(@as(i32, @intCast(if (gate) l.width else l.dims)));
++    a.add(if (gate) l.limit else @as(f32, 0.0));
++    a.add(skip);
++    const fi: usize = if (gate) 0 else 1;
++    const wn = Nvfp4Experts.fact_wn[fi];
++    const cfg: launch_.Config = .{ .grid = .{ .x = @intCast(items * ((nb + wn - 1) / wn)), .y = 1, .z = 1 }, .block = .{ .x = @intCast(wn * 32), .y = 1, .z = 1 }, .shared = Nvfp4Experts.promptSmem(if (gate) 2 else 1, wn) };
++    try launch_.launch(e.fact_fns[fi], cfg, s, &a);
++}
+diff --git a/zig/src/families/flashnext/cuda_batch.zig b/zig/src/families/flashnext/cuda_batch.zig
+index 1784f52a..665259db 100644
+--- a/zig/src/families/flashnext/cuda_batch.zig
++++ b/zig/src/families/flashnext/cuda_batch.zig
+@@ -89,19 +89,15 @@ fn profile() bool {
+     return std.mem.eql(u8, std.mem.span(v), "1");
+ }
+ 
+-/// Rows from which a pass's NVFP4 experts take the prompt tiles (TF_FLASHNEXT_FACT_ROWS, 0 for never); the bits
+-/// are the decode form's either way, so this only sets speed.
++/// Rows from which NVFP4 experts take the prompt tiles (TF_FLASHNEXT_FACT_ROWS, 0 never): same bits, only speed.
+ fn factRows() usize {
+-    const S = struct {
+-        var rows: ?usize = null;
+-    };
+-    if (S.rows) |r| return r;
+-    var r: usize = 64;
+-    if (std.c.getenv("TF_FLASHNEXT_FACT_ROWS")) |v| r = std.fmt.parseInt(usize, std.mem.span(v), 10) catch 64;
+-    if (r == 0) r = std.math.maxInt(usize);
+-    S.rows = r;
+-    return r;
++    if (fact_rows == null) {
++        const r = if (std.c.getenv("TF_FLASHNEXT_FACT_ROWS")) |v| std.fmt.parseInt(usize, std.mem.span(v), 10) catch 64 else 64;
++        fact_rows = if (r == 0) std.math.maxInt(usize) else r;
++    }
++    return fact_rows.?;
+ }
++var fact_rows: ?usize = null;
+ 
+ pub fn Pass(comptime Tri: type) type {
+     return struct {
+diff --git a/zig/tests/cuda/contract_nvfp4_fact.zig b/zig/tests/cuda/contract_nvfp4_fact.zig
+index f8ce071d..b471f399 100644
+--- a/zig/tests/cuda/contract_nvfp4_fact.zig
++++ b/zig/tests/cuda/contract_nvfp4_fact.zig
+@@ -1,5 +1,4 @@
+-//! NVFP4 experts' prompt tiles with the decode form's factored sums (nvfp4_experts.cu's tf_nvfp4_fact_*) under the
+-//! contract: each replaces the decode form it stands for (nvfp4_expert_kernel<2, 2, 4> and <1, 0, 4>) bit for bit.
++//! NVFP4 prompt tiles with the decode form's sums under the contract: each replaces its decode form bit for bit.
+ const std = @import("std");
+ const cuda = @import("cuda");
+ const core = @import("core");
+@@ -11,8 +10,7 @@ const g = contract.gates;
+ const fx = cuda.experts.Nvfp4Experts;
+ const grouped = cuda.grouped;
+ 
+-/// SwiGLU gate-up to bf16 rows, fp32 down to slot rows; and the control: the existing scaled-code prompt tile
+-/// (tf_nvfp4_prompt_swiglu, one fp32 sum over K) posing as the decode form's replacement, which gate 3 must refuse.
++/// SwiGLU gate-up, fp32 down, and a control: tf_nvfp4_prompt_swiglu posing as a replacement, which gate 3 refuses.
+ pub const Kind = enum { up, down, control };
+ 
+ const experts = 4;
+@@ -115,7 +113,7 @@ pub const Experts = struct {
+         return self.scales[(e * self.parts() + part) * per ..][0..per];
+     }
+ 
+-    /// Random codes, block scales, globals and inputs; non-finite: planted values; stress: integer sums, mirrored halves.
++    /// Random codes, scales, globals and inputs; non-finite: planted values; stress: integer sums, mirrored halves.
+     pub fn prepare(self: *Experts, shape: c.Shape, fill: g.Fill, seed: u64) !bool {
+         if (shape.rows == 0 or shape.n == 0 or shape.n % 32 != 0 or shape.k == 0 or shape.k % 32 != 0) return false;
+         self.free();
+@@ -170,9 +168,7 @@ pub const Experts = struct {
+         return true;
+     }
+ 
+-    /// Gate 4: inputs 128..255 (bf16 integers), codes 4 and 6 at scale 1 and globals 1; the second half of K mirrors
+-    /// the first with negated codes, x's first a step lower: sums reach ~2^20 in fp32, exact in any order, and end at one
+-    /// code (so SwiGLU's bf16 roundings, which scale with the result, stay far below a bf16 sum's loss).
++    /// Gate 4: bf16-integer inputs, codes 4 and 6 at scale 1, K's halves mirrored: fp32 sums exact in any order.
+     fn stress(self: *Experts, rng: std.Random) void {
+         const k = self.shape.k;
+         @memset(self.scales, 0x38);

@@ -1,0 +1,848 @@
+List the main topics of the following text.
+
+n returns its public result URL.
+
+If the website's model-checkpoint service is temporarily unavailable, a valid receipt is saved privately and its public-checkpoint check is retried automatically. A complete standard run becomes public only after that check passes. You do not need to rerun the benchmark or upload the same receipt again. Private or inaccessible checkpoints are never published automatically. Valid incomplete or nonstandard runs remain pending review after public-checkpoint verification; invalid receipts are rejected.
+
+Retries return the same saved submission without using another upload. Older manual-review submissions and withdrawn results are not automatically republished. The receiver recomputes statistics rather than trusting a client summary. All community measurements remain self-reported; automatic approval does not independently verify speed or hardware.
+
+### Existing CLI publishing credentials
+
+CLI installations that already have scoped upload credentials can continue to publish directly:
+
+```sh
+# Run, show the public fields, and ask before publishing.
+tensorfold benchmark TensorFold/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit --publish
+
+# Publish an existing receipt; --yes consents without the prompt.
+tensorfold benchmark publish receipt.json --yes
+
+# Remove locally stored CLI upload credentials.
+tensorfold benchmark logout
+```
+
+Direct CLI publishing still requires its existing credentials; it does not use the browser cookie. New contributors can use the local-run and browser-upload flow above without credentials. If a CLI publication check fails, the saved receipt can be uploaded through the website without rerunning the model.
+
+For existing automation, `tensorfold benchmark login` reads an issued token at a hidden prompt, and `--token-stdin` reads it from a private secret store or file. `TENSORFOLD_BENCHMARK_TOKEN` can supply a token for a single automation run; it is never saved into a receipt or printed. Saved credentials are bound to the exact HTTPS API URL selected by `--upload-url`. Redirects are not followed, and CLI uploads and public checks connect directly without proxy variables. Loopback HTTP is accepted for local development only.
+
+## Contributor profiles and leaderboards
+
+Click a contributor name on [the benchmark dashboard](https://tensorfold.dev/benchmarks) to see their public benchmark history, model and hardware counts, personal best and earned milestones. Profiles include every approved receipt through pagination, not only the newest page. Profile links can be shared or opened directly. A contributor ID names an upload identity; self-chosen display names are not verified, and two identities with the same name remain separate.
+
+The performance map plots the visible protocol-complete greedy-chat medians by first-text latency and stream-delivery speed. Each point opens its receipt, with keyboard access; the sample count describes only the loaded page, and loading more adds older results. Model and hardware filters update the map and standings.
+
+**Most benchmarks** ranks contributors by their number of approved receipts. **Fastest run** ranks each contributor by their best protocol-complete greedy-chat stream-delivery median, using the same five-repeat, 256-token workload as the run board. The model, platform and hardware filters apply to both rankings and community counters. Different models and hardware have different limits; filter the view before comparing setups. All results remain community-reported.
+
+The profile achievement cabinet awards bronze, silver, gold and platinum trophies for published-run milestones at 1, 5, 10 and 100 runs, plus model and hardware exploration. Top contributor honours go to the highest global approved-run count; speed leader honours go to the highest global protocol-complete greedy-chat median. Awards use the unrounded global values, equal leaders share honours and missing speeds earn no speed trophy. The profile progress bar shows the next published-run milestone. Pending and withdrawn submissions do not earn public standings or milestones, and public profile IDs grant no submission or administration access.
+
+## AMD (ROCm)
+
+A ROCm build runs the same suite and saves its receipt locally, with backend `rocm` on platform `linux`. `--backend auto` picks `rocm` on that build; an attached run names it with `--backend rocm`. A managed ROCm run records the CPU and system memory, while GPU names and the driver version stay unknown. `inspect` shows a ROCm receipt as usual. The board accepts mlx and cuda receipts for now, so `--publish` with ROCm is refused before the run starts and `benchmark publish` refuses a ROCm receipt before any upload; publishing waits for the board to accept rocm.
+# Control room
+
+The control room is part of the Python engine, frozen at 0.6.6. Install that engine from the
+[`v0.6.6` tag](https://github.com/ashhart/TensorFold/tree/v0.6.6) to use it; its code is
+[`src/tensorfold/control/`](https://github.com/ashhart/TensorFold/tree/v0.6.6/src/tensorfold/control) there.
+The native binary has no `service` or `tui` command, and it refuses the Python-only serve flags in the examples below.
+
+`tensorfold service` installs a per-user macOS LaunchAgent that runs
+`python -m tensorfold serve` with a literal argument list.
+`tensorfold tui` is the keyboard dashboard for those jobs and for read-only HTTP endpoints.
+A profile plus telemetry is the whole input. No model forward, kernel, sampler, or cache changes.
+
+## Install a service
+
+The model is already cached. `install` writes the profile and an enabled login job.
+The name `control-smoke` is reserved. `service install` and the new-service key refuse it.
+Pass `--start` when the server should come up immediately. Pull an uncached model with
+`tensorfold pull` first. `--allow-download` is the opt-in for a download at service start.
+A Hugging Face id works once its files are on disk.
+
+The job lives in the logged-in user's `gui/<uid>` domain. It starts at that user's login
+and stops at logout. Root and `sudo` are refused. An SSH session still needs that user's
+GUI login domain.
+
+```bash
+tensorfold service install "/absolute/path/to/cached-model" \
+  --name default --context 32768 --parallel auto
+tensorfold service start default
+tensorfold service status default
+tensorfold service doctor default
+tensorfold tui --profile default
+```
+
+```bash
+tensorfold service list
+tensorfold service status default --json
+tensorfold service logs default --lines 100 --follow
+tensorfold service stop default
+tensorfold service restart default
+tensorfold service uninstall default --yes
+```
+
+`stop` disables the job before unloading it, so login leaves it stopped until `start`.
+`start` loads a job that is not currently registered.
+`restart` waits until launchd has removed the job, then starts it. A failed wait starts nothing else.
+`uninstall` removes the profile and the plist. Models, caches, and logs stay.
+It then enables the label, so the launchd override stays enabled.
+
+The profile is the source of truth for the plist. The manager refuses a plist that differs from its profile.
+Replace a profile only while it is stopped.
+
+```bash
+tensorfold service stop default
+tensorfold service install "/absolute/path/to/cached-model" \
+  --name default --context 65536 --replace
+tensorfold service start default
+```
+
+## Configuration
+
+The serving interpreter is an absolute path. A virtualenv symlink stays as written.
+No field is evaluated as a shell command.
+
+```bash
+tensorfold service install "/cached/model with spaces" --name code \
+  --port 8081 --parallel auto --python "$HOME/.venvs/tensorfold-control/bin/python" \
+  --env TENSORFOLD_MEMORY_LIMIT_GB=48 \
+  --arg=--vision --arg=--spill-gib --arg=20
+```
+
+`--port` and `--parallel` are written on the serve command. A non-secret `--env` value such as
+`TENSORFOLD_MEMORY_LIMIT_GB` is stored on the profile and passed to that process.
+That variable is the Python engine's memory budget, in GiB. The native engine does not read it. GLM on a Mac reads
+`GLM_LOAD_LIMIT_GB`, in GB, and the CUDA build reads `TENSORFOLD_CUDA_MEMORY_LIMIT_GB`.
+`--spill-gib` is @gilby's disk spill from [#68](https://github.com/ashhart/TensorFold/pull/68), and `--vision` is
+[image input](vision.md); the native binary refuses both.
+Repeat `--arg` for extra literal `serve` arguments. Managed endpoint flags stay on their own options.
+The bind address defaults to `127.0.0.1`. A non-loopback address needs `--allow-network`.
+That acknowledgement leaves authentication to a proxy you configure separately.
+
+Credentials belong in a mode `0600` JSON file. The service reads it at start.
+The plist and the profile store the path. The values stay in the file.
+
+```bash
+chmod 600 "$HOME/.config/tensorfold/service-env.json"
+tensorfold service install Org/Already-Cached-Model --name private \
+  --env-file "$HOME/.config/tensorfold/service-env.json"
+```
+
+The file is a JSON object such as `{"HF_TOKEN": "<your-token>"}`.
+Accepted names use the documented engine and Hub prefixes.
+The manager rejects a file that is not private, not owned by the user, or reached through a symlink.
+A process of the same user can still read its own environment.
+The log view redacts common secret shapes. Prompt text needs the engine's own body logging left off.
+
+| Path | Role |
+|---|---|
+| `~/Library/Application Support/TensorFold/control/profiles/NAME.json` | Private profile |
+| `~/Library/LaunchAgents/dev.tensorfold.NAME.plist` | Per-user job, no model credentials |
+| `~/Library/Logs/TensorFold/NAME/server.log` | Server and supervisor log |
+| `~/Library/Application Support/TensorFold/control/work/NAME/` | Working directory |
+
+Profiles, plists, and logs are user-private. The default log cap is 8 MiB plus four backups.
+One record can land slightly past a rollover. Unsuccessful exits wait 30 seconds before launchd tries again.
+A clean exit stays down. The runner forwards SIGTERM to the server child and leaves
+process-group cleanup to launchd.
+
+## Terminal dashboard
+
+Service commands use the standard library. The dashboard needs `prompt_toolkit` in the same venv.
+
+```bash
+python -m pip install 'prompt-toolkit>=3.0.51,<4'
+```
+
+The error from `tensorfold tui` prints that command with the venv's Python. `rich` uses the same form.
+
+```bash
+tensorfold tui
+tensorfold tui --profile code
+tensorfold tui --url http://127.0.0.1:8080/v1
+tensorfold tui --url https://spark.example.invalid --token-env TENSORFOLD_API_KEY
+tensorfold tui --demo
+tensorfold tui --demo --snapshot preview.svg
+```
+
+Local service changes are macOS-only. A remote URL is monitor-only on every platform.
+The token comes from the named environment variable, and the dashboard never stores it.
+Requests are GET `/health` and GET `/metrics`, with a size limit, no redirects, no inherited proxies,
+and verified TLS. Health polls leave peak counters alone.
+
+| Key | Action |
+|---|---|
+| `j` / `k`, arrows | Select a profile or endpoint |
+| `s` | Start the selected local service |
+| `x` / `r` | Stop or restart, after confirmation |
+| `n` | Install a cached-model profile and leave it stopped |
+| `/` | Command palette |
+| `Tab`, `l`, `d` | Change view, logs, overview |
+| `f` | Filter logs, literal and case-insensitive |
+| `PgUp` / `PgDn` / `End` | Scroll logs, or resume following |
+| `Space` | Pause monitoring. Inference keeps running |
+| `?`, `Esc` | Help, or close a panel |
+| `q`, `Ctrl+C` | Leave the UI. Services keep running |
+
+Pasted text, including newlines, stays in the field. Backspace, Tab, and Ctrl+U edit it.
+The confirmation keeps the profile name from the moment you asked.
+Selecting another row while that panel is open does not retarget the operation.
+The process id on screen is the launchd supervisor. The server child pid is in the log.
+Demo mode and a remote endpoint cannot mutate a local service.
+
+The sidebar logo is resampled from the source mark into `logo-pixels.json` at the header width.
+Each cell is the upper half block, foreground for the top pixel and background for the bottom pixel, in 24-bit colour.
+There is no runtime image decode, and the pixels are not stretched to another size.
+The sidebar shows TensorFold when `COLORTERM` is not `truecolor` or `24bit`.
+It also shows TensorFold when the header is under 24 columns.
+`--color 256`, `--color mono`, and `NO_COLOR` use that wordmark.
+The smallest usable size is 72 by 23. At 126 by 32 or larger the overview is complete.
+The UI redraws on input, telemetry, and resize. The poll default is one second.
+
+## Metrics
+
+Output and prompt rates are aggregate counter deltas over a rolling window.
+The first sample is a baseline. A missing metric is a dash on screen. A real zero is a counter that read zero.
+A failure, a long gap, a counter reset, or a new counter source drops the baseline.
+Monitoring never sends a generation request.
+
+CUDA `/health` reports generated tokens as they arrive, and `/metrics` counts completed requests.
+The dashboard prefers the live counter when that counter is present, and it names the source.
+When `/health` carries a `live` object, DECODE TOK/S, PREFILL TOK/S, and CONNECTIONS / WAIT use
+`decode_tokens_per_second`, `prefill_tokens_per_second`, `connections`, and `waiting`.
+A missing live field, or a value that is not a finite number at least zero, leaves that cell on the rolling counter
+or the request gauges. A zero from the server stays a zero.
+On MLX a rate can jump when a long request finishes. Prompt totals can include cached work, so a fallback
+PREFILL TOK/S includes that cached work. TTFT and draft acceptance count completed requests.
+KV is the highest reported pool ratio. Memory is MLX active buffers.
+A healthy HTTP response and a loaded launchd job are separate rows.
+
+## Tests
+
+```bash
+python -m pytest tests/control -q -m 'not macos'
+```
+
+That command uses stand-in launchd replies. It loads no model. A real LaunchAgent check belongs
+on a logged-in Mac after this branch is installed.
+# Cortheon mode
+
+`tensorfold serve MODEL --cortheon` puts [Cortheon](https://github.com/ashhart/Cortheon)'s reasoning program and web research inside the server.
+Every chat request it answers gets them, whatever client sends it.
+Nothing else needs installing. There is no Docker, no Python and no second model, and the client keeps its usual settings.
+
+Without the flag the server is unchanged, byte for byte.
+
+## What a chat request gets
+
+The server adds Cortheon's program to the system prompt.
+It reads the task type from the conversation's first user message, lists the stages to work through in order, and states the rules: research current facts, treat web text as data, cite sources, test changes before calling them done.
+
+It offers the model two tools that the server runs itself, `cortheon_search` and `cortheon_fetch`.
+When the model calls one, the server runs it, adds the result to the conversation and lets the model carry on.
+The client never sees these calls. It gets the answer, or the calls to its own tools.
+
+It researches before the model starts building.
+When the latest user message asks about current or version-specific facts, or asks to build with an outside library or API, the model first writes up to three search queries.
+The server runs them, reads up to three of the best pages and puts both in front of the model before its first token.
+Only the user's own words count here. Context a harness wraps in tags, such as a `<memories>` block with the current time, is ignored.
+
+It checks the end of the work once a turn.
+A coding task that changed files after its last test or build is asked to run the test or build before it finishes.
+A researched answer that cites no URL is asked for a short list of its sources.
+
+## Web safety
+
+A long page is cut to fit the model's room: its opening, then the lines that share the most words with the task and the model's latest search, in page order.
+
+Fetched pages and search results are untrusted data.
+Sentences that read as orders to the model, such as "ignore all previous instructions", are dropped before the model reads them: from page text, page titles, and search results' titles and snippets.
+The result says how many were dropped.
+A soft hyphen, zero-width character or Unicode tag character inside a word does not hide an order from this filter.
+Tag characters (U+E0000 to U+E007F) are also dropped from the text: they are invisible, yet some models read them as letters.
+Tag characters are dropped before the filter reads the text, so it judges exactly what the model will read.
+The filter reads each sentence and line on its own, so it does not see an order split across a line break.
+
+Reads go to public internet addresses only.
+The server refuses private, loopback, link-local and shared address ranges, checks every redirect hop the same way, and connects to the address it checked.
+Sites reachable only over IPv6 are skipped, because only an IPv4 address can be pinned between the check and the connection.
+TLS certificates are checked against the system's root certificates.
+Each page read stops at 2 MiB and 15 seconds, redirects included, and each search at 10 seconds.
+Reading a page as text stops after its first 2 MiB and 2 seconds of parsing, and keeps the text read by then; the instruction filter reads all of the text that is kept.
+
+Searches use DuckDuckGo's HTML results, which need no key, and its lite page when the HTML page refuses or comes back empty.
+Set `BRAVE_SEARCH_API_KEY` to search through Brave's API instead.
+
+## What leaves the machine
+
+With `--cortheon`, the search queries the model writes from the conversation go to DuckDuckGo, or to Brave when a key is set.
+Pages are fetched from this machine, so each site sees its address.
+Without the flag, the server makes no searches and reads no web pages.
+
+The instruction filter is a heuristic, and it can miss a page written to steer the model, such as one that splits an order across a line break.
+So `cortheon_fetch` reads only URLs the conversation has already shown: search results, links on pages it has read, and URLs in the user's, the system prompt's or a tool's messages.
+A URL that appears only in the model's own replies does not count, so a steered model cannot build one that carries conversation text.
+The one exception is a package registry's JSON for a single named package: `https://pypi.org/pypi/NAME/json`, `https://registry.npmjs.org/NAME/latest` and `https://crates.io/api/v1/crates/NAME`, with a version allowed in place of `latest`.
+A name there is at most 64 characters, so that is the most a registry request could carry.
+A refused fetch tells the model to search for the page instead.
+Use `--cortheon` where sending search queries off the machine is acceptable for the conversations the server handles.
+
+## Budgets
+
+The model may make 6 web calls in a reply, on top of the research done before it starts.
+A reply runs at most 8 generation rounds.
+When the web budget runs out, the model is told to answer from what it has and to say what is still unsettled.
+
+## Requests
+
+A request can send `"cortheon": false` to skip it.
+Cortheon also leaves these requests as they are: `tool_choice` set to `"none"`, `"required"` or a named function, structured output, `logprobs`, title requests, background requests, and requests with no tools that ask the model to transform text they carry.
+Harnesses send those last ones for titles, summaries and routing hints.
+Requests to `/v1/responses` and `/v1/messages` get the same treatment as chat completions.
+
+A streamed reply shows Cortheon's progress in `reasoning_content`, for example `Cortheon: searching the web for "zig 0.17 release notes"`.
+Whole replies and the last streamed chunk carry a `cortheon` object:
+
+```json
+{"task": "research_answer", "research_first": true, "rounds": 1, "searches": 2, "pages_read": 2,
+ "sources": ["https://ziglang.org/download/0.17.0/release-notes.html", "https://ziglang.org/news/0.17.0-released/"], "checks": []}
+```
+
+## Prompt caching
+
+The research and tool rounds a client never saw stay in the server's memory, up to 512 replies or 32 MiB.
+On the next turn the server puts them back in front of the reply they informed.
+The prompt then matches what the model read last turn, so the prompt cache still resumes it.
+
+## Cost
+
+Research before building adds one short greedy generation for the queries and a few seconds of network time.
+Each web call the model makes adds one generation round.
+Decoding is unchanged: every round runs through the same engine, with the same exact output for the prompt it gets.
+
+## Example
+
+```bash
+tensorfold serve TensorFold/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit --cortheon
+```
+
+```bash
+curl -s http://127.0.0.1:8080/v1/chat/completions -H 'Content-Type: application/json' \
+  -d '{"messages": [{"role": "user", "content": "What changed in the latest Zig release?"}]}'
+```
+
+Point any OpenAI-compatible client at `http://127.0.0.1:8080/v1` as before.
+# Credits
+
+TensorFold's native engine (1.0 and later) grew out of the Python engine (0.2.0 to 0.6.6), and much of the Python
+engine was written by people who sent pull requests. This page names whose work each native part carries or follows,
+with links to their pull requests and to their files at the `v0.6.6` tag. The Python engine is frozen at that tag and
+still installs from it.
+
+Upstream projects whose code TensorFold adapts are named in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
+Everyone who sent a pull request, a measurement or a bug report is listed under Contributors in the
+[README](../README.md#contributors).
+
+## The server and its API
+
+The native server is one server for Metal and CUDA. Its request handling follows the Python server's, so these
+contributions are in it.
+
+- @kky42 wrote the Anthropic Messages API in [#223](https://github.com/ashhart/TensorFold/pull/223)
+  ([anthropic_translate.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/anthropic_translate.py),
+  [anthropic.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/anthropic.py)). The native
+  `zig/src/server/anthropic.zig` and `anthropic_translate.zig` follow that translation. The #223 commits carry the
+  account's former login, evilpsycho42.
+- @philip-pentatonic wrote structured output in [#80](https://github.com/ashhart/TensorFold/pull/80)
+  ([grammar.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/engine/grammar.py)), now
+  `zig/src/server/grammar.zig` and `zig/src/grammar/tf_grammar.cc`. The same author's
+  [#83](https://github.com/ashhart/TensorFold/pull/83) found message starts in chat templates that drop a reply's
+  think block ([prefill_plan.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/engine/prefill_plan.py));
+  `zig/src/server/chunk_plan.zig` finds them the same way.
+- @chris247474 typed tool-call parameters by the tool's schema and honoured a request's reasoning effort in
+  [#28](https://github.com/ashhart/TensorFold/pull/28)
+  ([tool_parameters.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/tool_parameters.py),
+  [tool_draft.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/engine/tool_draft.py)).
+  @outcastofmusic added Python-spelled values in [#135](https://github.com/ashhart/TensorFold/pull/135). Both are in
+  `zig/src/server/tool_params.zig` and `tool_stream.zig`.
+- @jeidbugs404 parsed GLM's `<arg_key>` and `<arg_value>` tool calls in [#35](https://github.com/ashhart/TensorFold/pull/35)
+  (`zig/src/server/tool_parse.zig`), and @salmanarshad321 made malformed tool-call history render safely in
+  [#233](https://github.com/ashhart/TensorFold/pull/233)
+  ([messages.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/messages.py),
+  `zig/src/server/messages.zig`).
+- Reasoning controls in `zig/src/server/fields.zig` come from @EugeneClaw's nearest named effort
+  ([#161](https://github.com/ashhart/TensorFold/pull/161)), @MiaAI-Lab's `max` and `xhigh` efforts
+  ([#183](https://github.com/ashhart/TensorFold/pull/183)) and @MiaAI-Lab's `chat_template_kwargs.thinking` switch
+  ([#236](https://github.com/ashhart/TensorFold/pull/236))
+  ([request_options.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/request_options.py)).
+- @gprot42 split a thought channel out of a reply wherever it opens, with thinking on or off, in
+  [#171](https://github.com/ashhart/TensorFold/pull/171)
+  ([text.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/text.py)), now
+  `zig/src/server/reply_text.zig`. @gprot42's [#177](https://github.com/ashhart/TensorFold/pull/177) placed the history
+  boundary one token short when a template adds no generation prompt
+  ([prompt_blocks.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/prompt_blocks.py)), as
+  `zig/src/server/prompt.zig` does.
+- @kingjamez's patch in the [#9](https://github.com/ashhart/TensorFold/pull/9) thread closes a dangling `<think>` when
+  thinking is off, in `zig/src/server/prompt.zig` as in the Python `text.py`.
+- @JordiPosthumus read chunked request bodies in [#244](https://github.com/ashhart/TensorFold/pull/244)
+  ([request_body.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/request_body.py)), now
+  `zig/src/server/http_body.zig`. @SxMShaDoW made a refused request's body unable to reach the next request on its
+  connection in [#182](https://github.com/ashhart/TensorFold/pull/182)
+  ([http.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/http.py)), now
+  `zig/src/server/routes.zig`. @jayleaton made the client-gone check work past descriptor 1023 in
+  [#218](https://github.com/ashhart/TensorFold/pull/218)
+  ([cancellation.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/cancellation.py)), now
+  `zig/src/server/http_conn.zig`.
+- @MiaAI-Lab added `/tokenize` and `/detokenize` in [#237](https://github.com/ashhart/TensorFold/pull/237)
+  ([token_routes.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/token_routes.py),
+  `zig/src/server/tokens.zig`) and image parts in Responses tool outputs in
+  [#235](https://github.com/ashhart/TensorFold/pull/235)
+  ([responses_translate.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/responses_translate.py)).
+- @mikolaj92 wrote `/v1/decisions` in [#127](https://github.com/ashhart/TensorFold/pull/127)
+  ([decisions.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/decisions.py)).
+  `zig/src/server/decisions.zig` checks a request the way decisions.py does.
+- Metrics and health: @MiaAI-Lab's live token totals on `/health` ([#79](https://github.com/ashhart/TensorFold/pull/79),
+  [health.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/cuda/health.py)), the vLLM metric names
+  and the disconnect and preemption counters from @jeidbugs404 and @di37
+  ([#156](https://github.com/ashhart/TensorFold/pull/156), [#158](https://github.com/ashhart/TensorFold/pull/158),
+  [metrics.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/server/metrics.py)),
+  @sxuff's `request_decode_seconds` ([#269](https://github.com/ashhart/TensorFold/pull/269)) and @akol1's
+  `process_footprint_bytes` ([#277](https://github.com/ashhart/TensorFold/pull/277)). They are in
+  `zig/src/server/metrics.zig` and `status_routes.zig`.
+- @di37's request log records image parts as `<redacted>` ([#64](https://github.com/ashhart/TensorFold/pull/64)),
+  now `zig/src/server/request_log.zig`. @jschmied's `TENSORFOLD_SEED_SALT`
+  ([#175](https://github.com/ashhart/TensorFold/pull/175),
+  [exact_sampling.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/engine/exact_sampling.py)) moves
+  every prompt-derived seed in the native server too.
+
+## Prompt reuse
+
+- @nood-co1's [#190](https://github.com/ashhart/TensorFold/pull/190) evicts first a kept state its conversation has
+  moved past, and keeps a shared system block and a state a conversation forks back to
+  ([streams.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/cuda/streams.py)). The native prompt
+  cache (`zig/src/core/prompt_cache.zig`, `prompt_radix.zig`) evicts by the same rule. @nood-co1's
+  [#65](https://github.com/ashhart/TensorFold/pull/65) kept a prompt's end state one token before its end, as the
+  native cache does for several families.
+- The message starts and history boundaries above (#83, #177) decide where the native cache keeps states.
+
+## Apple Silicon
+
+- @chadhurley25075-png brought GLM-5.3-Flash to Apple Silicon in [#9](https://github.com/ashhart/TensorFold/pull/9)
+  and wrote its absorbed sparse-attention prefill in [#39](https://github.com/ashhart/TensorFold/pull/39). The native
+  GLM-5.3-Flash engine's decode kernels are generated from the Metal kernels of #9
+  ([kernels/glm/flash/v1](https://github.com/ashhart/TensorFold/tree/v0.6.6/src/tensorfold/kernels/glm/flash/v1)), it
+  reads the mlx-lm checkpoint layout as the #9 loader did
+  ([layouts.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/families/glm5_next/layouts.py)), and
+  its prompt chunks attend the way the #39 prefill does, each query over its own keys in the latent cache
+  ([mla.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/families/glm5_next/mla.py)). The native
+  code is under `zig/src/families/glm` and `zig/kernels/metal/glm`.
+- @quigles1977 gave Flash Next a prompt path on Macs in [#29](https://github.com/ashhart/TensorFold/pull/29)
+  ([prefill_hc.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/kernels/qwen/flash_next/v1/prefill_hc.py),
+  [prefill.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/kernels/qwen/flash_next/v1/prefill.py)).
+  The native hyper-connection prompt kernels in `zig/kernels/metal/prefill/fn_prompt.metal` are the #29 kernels, and
+  `fn_attn.metal` reads only each row's selected blocks and tail, as the #29 attention did.
+- @gilby applied an n-gram table's `weight_scale` at lookup in [#148](https://github.com/ashhart/TensorFold/pull/148)
+  ([embed.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/kernels/qwen/flash_next/v1/embed.py)),
+  so oQ checkpoints of Flash Next load. The native `zig/src/families/flashnext/ple_scale.zig` applies the same rule.
+- @jasontitus gave the lane matmul 3- and 2-bit weights in [#34](https://github.com/ashhart/TensorFold/pull/34)
+  ([lane_qmm.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/kernels/qwen/dense/v1/lane_qmm.py)),
+  widening each group to nibbles for the 4-bit tensor op. The native `zig/kernels/metal/core/lane_projection.metal`
+  stages 2- and 3-bit codes the same way.
+- @di37 made the engine read the GPU generation once from `applegpu_gN`, and a virtual machine's GPU as none, in
+  [#209](https://github.com/ashhart/TensorFold/pull/209)
+  ([device.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/kernels/device.py)), as
+  `zig/src/metal/device.zig` does.
+
+## CUDA
+
+- @pmeenan made CUDA loads read checkpoints with O_DIRECT and pack MLX experts on the GPU in
+  [#82](https://github.com/ashhart/TensorFold/pull/82)
+  ([direct_read.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/cuda/direct_read.py),
+  [experts_pack.cu](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/cuda/experts_pack.cu)). @pmeenan
+  also wrote the native O_DIRECT reader, `zig/src/core/direct_io.zig`, and `zig/kernels/cuda/experts_pack.cu` is the
+  same packing kernel.
+- @jschmied brought block-scaled FP8 weights ([#126](https://github.com/ashhart/TensorFold/pull/126)) and the NVFP4
+  prompt rows that sum a tile's K slices in one block ([#242](https://github.com/ashhart/TensorFold/pull/242),
+  [qmmf.cu](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/cuda/nvfp4/qmmf.cu)) to the Python
+  engine, and ported both to the native CUDA engine as well (`zig/src/cuda/fp8.zig`, `qmmf.zig`).
+- The native CUDA memory budget takes `TENSORFOLD_MEMORY_RESERVE_GIB` from @MiaAI-Lab's
+  [#133](https://github.com/ashhart/TensorFold/pull/133) and `TENSORFOLD_CUDA_MEMORY_LIMIT_GB` from @eleqtrizit's
+  [#165](https://github.com/ashhart/TensorFold/pull/165)
+  ([capacity.py](https://github.com/ashhart/TensorFold/blob/v0.6.6/src/tensorfold/cuda/capacity.py),
+  `zig/src/native/cuda_memory.zig`).
+
+## EXL3
+
+@vcruz305 wrote the shared EXL3 module in [#42](https://github.com/ashhart/TensorFold/pull/42): the format reader, the
+row-invariant linear, grouped experts and the 27B and Flash Next packs
+([cuda/exl3](https://github.com/ashhart/TensorFold/tree/v0.6.6/src/tensorfold/cuda/exl3),
+[exl3.md](https://github.com/ashhart/TensorFold/blob/v0.6.6/docs/recipes/exl3.md)). The native EXL3 decoder
+(`zig/src/core/exl3_format.zig`, `exl3_projection.zig`) follows the format notes from #42, and the EXLR8 codebook
+that serves GLM-5.3 builds on that decoder. The native engine does not serve EXL3 packs yet.
+
+## More Python engine work
+
+These contributions shipped in the Python engine and install from the `v0.6.6` tag. Some reach the native engine by
+its own route, such as the one server for both backends, and many wait for its families and backends. All of them are
+credited here.
+
+- EXL3, caches and memory: @vcruz305 ([#42](https://github.com/ashhart/TensorFold/pull/42) packs and
+  `return_token_ids`, [#47](https://github.com/ashhart/TensorFold/pull/47) int8 and int4 KV caches and
+  `--mtp-confidence`, [#69](https://github.com/ashhart/TensorFold/pull/69)), @gilby
+  ([#68](https://github.com/ashhart/TensorFold/pull/68) disk spill and `--checkpoint-slots`), @akol1
+  ([#150](https://github.com/ashhart/TensorFold/pull/150), [#151](https://github.com/ashhart/TensorFold/pull/151)),
+  @barelyworkingcode ([#186](https://github.com/ashhart/TensorFold/pull/186)), @shantanugoel
+  ([#145](https://github.com/ashhart/TensorFold/pull/145)), @grearjake-star
+  ([#254](https://github.com/ashhart/TensorFold/pull/254)), @Chedrian07
+  ([#49](https://github.com/ashhart/TensorFold/pull/49)), @sanjaibalajee
+  ([#74](https://github.com/ashhart/TensorFold/pull/74)), @di37 ([#206](https://github.com/ashhart/TensorFold/pull/206)).
+- Images and video: @di37 ([#64](https://github.com/ashhart/TensorFold/pull/64)), @edurdias
+  ([#170](https://github.com/ashhart/TensorFold/pull/170)), @barelyworkingcode
+  ([#187](https://github.com/ashhart/TensorFold/pull/187)), @MiaAI-Lab
+  ([#239](https://github.com/ashhart/TensorFold/pull/239), [#240](https://github.com/ashhart/TensorFold/pull/240), and the
+  Flash Next vision patch adapted in #146), @mgoldwasser ([#101](https://github.com/ashhart/TensorFold/pull/101)),
+  @shantanugoel ([#146](https://github.com/ashhart/TensorFold/pull/146)), @BobClawblaw
+  ([#473](https://github.com/ashhart/TensorFold/pull/473)).
+- Model families: @cshintov (Gemma 4 in [#10](https://github.com/ashhart/TensorFold/pull/10), Qwen3.6 MoE on Macs in
+  [#138](https://github.com/ashhart/TensorFold/pull/138)), @di37 ([#224](https://github.com/ashhart/TensorFold/pull/224)),
+  @philip-pentatonic (Qwen3.6 on CUDA in [#78](https://github.com/ashhart/TensorFold/pull/78) and
+  [#84](https://github.com/ashhart/TensorFold/pull/84)), @BHCC2025 ([#270](https://github.com/ashhart/TensorFold/pull/270)).
+- Flash Next on CUDA: @tournierjc (NVFP4 checkpoints in [#67](https://github.com/ashhart/TensorFold/pull/67), then
+  [#102](https://github.com/ashhart/TensorFold/pull/102) and [#105](https://github.com/ashhart/TensorFold/pull/105)),
+  @jschmied ([#174](https://github.com/ashhart/TensorFold/pull/174), [#176](https://github.com/ashhart/TensorFold/pull/176),
+  [#178](https://github.com/ashhart/TensorFold/pull/178), [#180](https://github.com/ashhart/TensorFold/pull/180) with
+  @plotarmordev's test), @plotarmordev ([#222](https://github.com/ashhart/TensorFold/pull/222)), @BHCC2025
+  ([#141](https://github.com/ashhart/TensorFold/pull/141)), @MovieMaker93
+  ([#40](https://github.com/ashhart/TensorFold/pull/40), [#73](https://github.com/ashhart/TensorFold/pull/73),
+  [#93](https://github.com/ashhart/TensorFold/pull/93)), @benthecarman ([#124](https://github.com/ashhart/TensorFold/pull/124),
+  with @Arminova's resend test), @lcgutierrez ([#163](https://github.com/ashhart/TensorFold/pull/163)),
+  @mcclanahanaman ([#201](https://github.com/ashhart/TensorFold/pull/201), [#202](https://github.com/ashhart/TensorFold/pull/202)),
+  @simon-lin88 ([#248](https://github.com/ashhart/TensorFold/pull/248)), @MiaAI-Lab
+  ([#238](https://github.com/ashhart/TensorFold/pull/238)), @BobClawblaw ([#468](https://github.com/ashhart/TensorFold/pull/468)),
+  @Mirrdhyn (decisions on Flash Next in [#232](https://github.com/ashhart/TensorFold/pull/232), and the shared-prefix
+  design in 0.6.1).
+- GLM-5.3-Flash on CUDA: @taussoe ([#43](https://github.com/ashhart/TensorFold/pull/43), and the latent MLA cache to
+  256k tokens in [#54](https://github.com/ashhart/TensorFold/pull/54)), @MiaAI-Lab
+  ([#128](https://github.com/ashhart/TensorFold/pull/128), [#129](https://github.com/ashhart/TensorFold/pull/129),
+  [#131](https://github.com/ashhart/TensorFold/pull/131), [#132](https://github.com/ashhart/TensorFold/pull/132),
+  [#134](https://github.com/ashhart/TensorFold/pull/134)), @mikolaj92 ([#140](https://github.com/ashhart/TensorFold/pull/140)),
+  @akol1 ([#152](https://github.com/ashhart/TensorFold/pull/152)), @plotarmordev
+  ([#225](https://github.com/ashhart/TensorFold/pull/225)), @liumorrisclaw (four ranks in
+  [#465](https://github.com/ashhart/TensorFold/pull/465)).
+- Qwen3.8-27B on CUDA: @nood-co1 ([#58](https://github.com/ashhart/TensorFold/pull/58),
+  [#59](https://github.com/ashhart/TensorFold/pull/59), [#92](https://github.com/ashhart/TensorFold/pull/92),
+  [#125](https://github.com/ashhart/TensorFold/pull/125)), @jkuepker ([#100](https://github.com/ashhart/TensorFold/pull/100),
+  landed through [#112](https://github.com/ashhart/TensorFold/pull/112)), @Arminova
+  ([#268](https://github.com/ashhart/TensorFold/pull/268)).
+- Shared CUDA: @jayleaton (the communicator interface in [#219](https://github.com/ashhart/TensorFold/pull/219)),
+  @liumorrisclaw (Ampere cards with compute capability 8.0 in [#464](https://github.com/ashhart/TensorFold/pull/464)).
+- The Python servers: @nood-co1 ([#57](https://github.com/ashhart/TensorFold/pull/57),
+  [#61](https://github.com/ashhart/TensorFold/pull/61), [#62](https://github.com/ashhart/TensorFold/pull/62),
+  [#63](https://github.com/ashhart/TensorFold/pull/63)), @cshintov ([#199](https://github.com/ashhart/TensorFold/pull/199)),
+  @olexale ([#114](https://github.com/ashhart/TensorFold/pull/114)), @MiaAI-Lab
+  ([#75](https://github.com/ashhart/TensorFold/pull/75)), @philip-pentatonic
+  ([#111](https://github.com/ashhart/TensorFold/pull/111), and `--name-priority` in
+  [#445](https://github.com/ashhart/TensorFold/pull/445)), @akol1 (`tensorfold plan` in
+  [#281](https://github.com/ashhart/TensorFold/pull/281)).
+- Apple Silicon: @gilby ([#147](https://github.com/ashhart/TensorFold/pull/147),
+  [#149](https://github.com/ashhart/TensorFold/pull/149), [#164](https://github.com/ashhart/TensorFold/pull/164)), @feni6
+  ([#118](https://github.com/ashhart/TensorFold/pull/118), [#119](https://github.com/ashhart/TensorFold/pull/119)).
+- Tooling, tests and docs: @kingjamez ([#44](https://github.com/ashhart/TensorFold/pull/44)), @di37
+  ([#189](https://github.com/ashhart/TensorFold/pull/189)), @akol1 ([#276](https://github.com/ashhart/TensorFold/pull/276)),
+  @plotarmordev ([#221](https://github.com/ashhart/TensorFold/pull/221), [#288](https://github.com/ashhart/TensorFold/pull/288),
+  [#289](https://github.com/ashhart/TensorFold/pull/289)), @taussoe ([#66](https://github.com/ashhart/TensorFold/pull/66)),
+  @jasontitus ([#33](https://github.com/ashhart/TensorFold/pull/33)), @feni6
+  ([#120](https://github.com/ashhart/TensorFold/pull/120)).
+# GLM-5.3 (EXLR8) on two Macs
+
+TensorFold serves the whole GLM-5.3 model from kindlingai's EXLR8 release on two Macs joined by Thunderbolt. Each Mac
+holds half of every expert and every attention head, and rank 0 serves the OpenAI-compatible API while rank 1 runs each
+request beside it. The release is
+[kindlingai/glm-5.3-exlr8-k2-k3-k4](https://huggingface.co/kindlingai/glm-5.3-exlr8-k2-k3-k4), pinned at revision
+`f459f5d0272a529403dd9b3fd32f771f4250a0d4`. We have run its `home` profile on two M5 Ultra Macs with 256 GB each.
+
+## What you need
+
+- Two Macs with 256 GB each. A served Mac holds about 160 GB: 157.2 GB of weights with the MTP layer, and 159.6 GB at
+  `--context 8192 --parallel 4`. The server refuses to load past 66% of RAM.
+- About 270 GB of free disk on each Mac. A Mac's share is 139.5 GiB of expert halves plus 11 GB of whole files, but the
+  expert files keep their full size with only that Mac's halves written, and APFS gave those folders 256 and 264 GB.
+- A Thunderbolt 5 cable between the Macs and MCDMA's fabric library, set up as in steps 3 and 4 of the
+  [speed-up mode guide](speed-up-mode.md). The settings files are the same.
+
+The weights come under the release's own terms: the GLM-5.3 license, and CC BY 4.0 for the EXLR8 format.
+
+## Pull each Mac's share
+
+`pull --exlr8 PROFILE --node R/2` fetches only what node R of two needs: every whole file, and its half of each
+expert's intermediate channels. Run it on each Mac with its own node number:
+
+```sh
+tensorfold pull kindlingai/glm-5.3-exlr8-k2-k3-k4@f459f5d0272a529403dd9b3fd32f771f4250a0d4 \
+  --exlr8 home --node 0/2 --dir ~/models/glm-5.3-exlr8-home
+```
+
+On the second Mac, pass `--node 1/2`. Every whole file must equal the hub's sha256, every expert file's published hash
+must equal the hub's, and each expert half must equal its xxhash64 before it is written. A pull that stops resumes:
+run the same command again, and it checks what is on disk and fetches only what is missing. Our two Macs took 43
+minutes over a shared uplink, at about 55 MiB/s each.
+
+## Serve
+
+Start rank 1, then rank 0 within five minutes. Each Mac loads in three to four minutes.
+
+```sh
+tensorfold serve ~/models/glm-5.3-exlr8-home --speed-up rank1.json --context 8192 --parallel 4 --temperature 0
+tensorfold serve ~/models/glm-5.3-exlr8-home --speed-up rank0.json --context 8192 --parallel 4 --temperature 0 \
+  --name glm-5.3
+```
+
+Run each command on its own Mac, and send requests to rank 0. `--context` defaults to 16,384 tokens and takes up to
+262,144, and `--parallel` sets the streams, 8 by default and 16 at most. Rank 0 keeps prompt states for later turns in
+up to 8 GiB by default, inside the load limit; `--prompt-cache-gib` sets another size and 0 turns them off. The engine
+decodes greedily, and it refuses `--learn` and `--slide`.
+
+## Measured
+
+On our two M5 Ultras over one cable, one stream decodes at 21 tokens a second with `"draft": false`, and at 31 to
+32 with the MTP layer's drafts, of which 60 to 74% land. Prompts run at about 200 tokens a second, 205 at 837 tokens
+and 184 at 3,251, and the first prompt after a load at about 120.
+
+Drafted replies equal `"draft": false`, a resumed conversation equals a fresh one, and concurrent requests equal their
+solo replies, idle and with 36 busy threads on each Mac.
+
+## Known limits
+
+- Decode is slow. A one-row round takes about 45 ms of GPU time. At one row, the attention output projection's 48
+  trellis jobs fill 48 of the GPU's 80 cores, and the routed experts' short down-projection jobs run unsplit, so part of
+  the GPU stays idle.
+- No CUDA serving yet. The CUDA kernels decode EXLR8 weights bit for bit as the Metal ones do, but no CUDA engine serves
+  GLM-5.3.
+- Contexts past 2,048 tokens have not been checked against a whole-model reference. Past 2,048 tokens the sparse
+  indexer picks which keys each query reads; the layer checks covered 2,304 tokens, and a 3,251-token prompt served,
+  but nothing compared a whole reply at that length.
+- Only the `home` profile, two nodes, and M5 Ultras have been run.
+# Kernel contract
+
+Every GPU kernel, ours or a contributor's, registers with the kernel contract before it lands. One harness
+(`zig/src/core/contract/`) runs five gates on Metal and on CUDA, and each gate has a planted control: a kernel built to
+break that gate, which the gate must report as failing. A run where a control passes is a failed run, because then the
+gate proves nothing.
+
+A kernel's own unit test usually compares a few outputs within one tolerance. The gates ask more: what happens to NaN
+and infinities, whether the bytes repeat, whether every tile edge is covered, whether the sums are really fp32, and
+whether the launch fits every chip we serve.
+
+## What a kernel registers
+
+The test of a kernel fills a `contract.spec.Spec` and hands the harness a few hooks (`contract.gates.VTable`, or
+`gates.hooks(T)` for a test type with `prepare`, `run`, `count` and `reference`).
+
+- Its float64 reference: the kernel's own formula in float64. The input families in `zig/src/core/contract/` cover the
+  common cases: `affine` (MLX's affine-quantized projections), `dense` (dots against dequantized weights, in K
+  slices) and `rows` (RMS norm, softmax, sums, dots, maxima). Each builds inputs for every gate, computes the reference
+  and the magnitude of the terms each output sums, and can replay the sums in another accumulator.
+- Its served envelope: the shapes the engine calls it at, and for each dimension its tile, the step a valid size
+  moves by and the least valid size.
+- Its accumulator (`f32` for every kernel here) and the depth of its longest chain of roundings at a shape, plus any
+  fp32 operations after the sums (`ops`) and intermediate roundings to the output type (`mids`).
+- Whether it may write in place. If it replaces another kernel, the kernel whose bits it must equal.
+- Its NaN rule: `propagate` (as float64 arithmetic on its formula does), or a stated rule the test checks itself
+  (top-k, argmax, sampling and routing kernels state theirs).
+- For gate 5, its launch in `zig/src/core/contract/registry.zig`: threads a group and threadgroup bytes (the source's,
+  and any its encoder sets) on Metal, or symbol, image, threads a block, dynamic shared bytes and cluster width on CUDA,
+  with the limits its compiles recorded.
+
+## The gates
+
+1. Non-finite. NaN, +Inf and -Inf go into the inputs at known places (a row each, one row holding both infinities).
+   Every output's class (finite, NaN, +Inf, -Inf) must equal the float64 reference's, tolerance-free. A kernel with a
+   stated rule checks the rule instead. Control: a row maximum by `fmax`, which drops a NaN.
+2. Repeat and aliasing. Five runs on the same inputs give the same bytes, the inputs are unchanged afterwards, the
+   guard bytes around every buffer are intact, and no output overlaps an input unless the spec says in place.
+   Controls: a row sum by atomic adds (its order changes from run to run), and a row sum that writes into its input.
+3. Shapes. Every served shape, then each tiled dimension at its least size, a tile minus a step, a tile, a tile plus a
+   step and the largest served size. Each output must be within `|want| * outputs' half ulp + gamma(depth) * magnitude`
+   of float64, or for a replacement kernel bit-equal to the kernel it replaces. Control: a row sum whose partial tail
+   loses its last input; it passes at whole tiles and fails at the edges.
+4. fp32 sums. The inputs are integers whose partial sums reach about 2^20 in any order and stay below 2^24, so fp32
+   sums are exact whatever the kernel's order; the second half of each row mirrors the first, so the result is small.
+   Before the kernel runs, the harness replays the sums on the CPU in fp16 and bf16 (one chain, contiguous halves, and
+   32 lanes then their halves) and requires each to miss by at least 100 times the exact-sum bound: fp16 overflows,
+   bf16 loses thousands. Then the kernel must meet the exact-sum bound, which enforces "no fp16 sums where fp32 is
+   used". Where the output's own rounding hides a sum's error (a bf16 softmax of at most 4,096 terms in [0, 1]), the
+   spec says so and the run prints the margins it could prove. Control: a dot product summed in half.
+5. Limits. Every registered launch against each chip we serve, from its declaration and recorded compiles, so this
+   part runs with no GPU in `zig build test`. Metal: threads a group and threadgroup bytes against M1 to M5; on M1
+   and M2 a pipeline's thread limit falls as its registers rise (simd_qmm_bits' 8-bit tiles compile for 224), so
+   every launch records its M1/M2 limit, unless its launcher sizes its groups to the pipeline or its source reserves
+   the threads. A tensor-op kernel, which cannot be built for M1/M2 ahead of time, stays at 256 threads. CUDA:
+   registers a thread (rounded per warp), static plus dynamic shared bytes, launch bounds and clusters against sm_80,
+   sm_86, sm_89, sm_120 and sm_121. Tools re-derive the records: on a Mac, `tf-kernel-contract --offline DIR` compiles
+   each pipeline for M1 and M2 with Xcode's Metal toolchain (native code built for T threads equal to the plain build
+   means the plain pipeline runs T); on a CUDA build machine, `tf-cuda-test kernel-contract-limits DIR` reads registers,
+   shared bytes and launch bounds from the fatbins' ELF images for every SM, counted as the driver counts them (sm_120
+   and sm_121 images keep registers only in the `.nv.info` register records, and add the block's reserved 1 KiB to
+   `.nv.shared`). On the GPU itself both runners check the loaded pipelines and the device's own limits. Controls:
+   Metal, the row projection's pipeline launched at 1,024 threads where M1 and M2 compile it for 512, and 36 KiB of
+   threadgroup memory; CUDA, a kernel launched past its `__launch_bounds__`, and one needing more registers than a block
+   has.
+
+## Running it
+
+On a Mac, `zig build kernel-contract -Dcpu=apple_m1` runs every Metal kernel registered for this GPU, the controls
+and gate 5. `zig build tf-kernel-contract` builds the program alone; `--only TEXT` runs the kernels whose name holds
+TEXT, `--offline DIR` adds the M1/M2 compiles, and `--repro` prints the smallest input behind each known finding.
+
+On a CUDA machine, build with `-Dnvcc` (the controls are compiled only then), and run `zig build kernel-contract
+-Dnvcc=/usr/local/cuda/bin/nvcc`. For the limits of every SM, `zig build fatbins kernel-contract-fatbins -Dnvcc=...
+-Dsm=80,86,89,120,121`, then `tf-cuda-test kernel-contract-limits zig-out/fatbin`. Its `RECORD` lines are the values
+`registry.zig` holds.
+
+Every run ends with a `SUMMARY` line: kernels passing gates 1 to 4, known findings, controls red, and limit problems.
+The program exits 1 on any failed gate, any control that stayed green, or any limit problem.
+
+## Adding a kernel
+
+1. Write its test type in `zig/tests/contract/` (Metal) or `zig/tests/cuda/contract_*.zig` (CUDA): `prepare` builds
+   the inputs for a shape and a gate's fill (usually through an input family), `run` launches once and waits, `count`
+   and `reference` give the outputs and their float64 values, `simulate` replays the sums for gate 4.
+2. Add it to the runner's list, with its served shapes and tiles.
+3. Add its launches to `registry.zig`, and fill the records from `--offline` (Metal) or `kernel-contract-limits`
+   (CUDA).
+4. Post the `SUMMARY` lines from each backend you ran in the pull request, and say which chips you could not run.
+
+A replacement kernel names the kernel it replaces and gives `replaced`, which runs that kernel on the same inputs.
+
+## Known findings
+
+A gate failure on a kernel already shipped is reported, not hidden. Until its fix lands, its spec can carry a
+`known` entry naming the gate and what fails. That gate must keep failing (the run prints `KNOWN`); once a fix makes
+it pass, the run fails until the entry is removed. Today: affine_mm's 4-bit form gives NaN for an infinite input where
+MLX's formula keeps the infinity, because its codes enter the MMAs as q + 128 and its bias as b - 128 s.
+
+## Coverage
+
+Metal: softmax, RMS norm, bf16 top-k, the row projection (3, 4, 6 and 8 bits), affine_mm (4 and 8 bits), simd_qmm
+(4 bits) and simd_qmm_bits (3, 6 and 8 bits), and the lane projection (6-bit groups of 32 on every chip; 4- and 8-bit
+formats on the M5's tensor units, where its reg kernel must equal the cooperative one bit for bit), and tile_qmm's
+prompt tiles and their decode twin (4, 6 and 8 bits; the twin bit-equal to the tiles). Gate 5 also holds the rest of
+tile_qmm's pipelines and GLM-5.3-Flash's hc_expand_10.
+CUDA: the RMS norm rows (16-byte form and the fp32-out tree), Nemotron's router logits and top-k, qmm_group's cluster
+tile, lane_gemv and its split-K form (both bit-equal to it), prompt16's FP4 tile with bf16 and fp32 out, qmmf's FP4
+tiles with fp32 out (K slices met in a cluster, fused, or by `reduce_kernel<true>`), and the reduce-scatter's
+`tf_rank_sum`.
+# Known issues
+
+This is the current list. Each release's notes summarize it and say what changed; an issue leaves the list only when a
+release fixes it, and the release notes say which one.
+
+## Models
+
+- GLM-5.3 (EXLR8) decodes slowly next to the other models: a one-row round on two M5 Ultras takes about 45 ms. No CUDA
+  engine serves it, and only the `home` profile on M5 Ultras has run. Replies past 2,048 tokens, where the sparse indexer
+  starts picking keys, have not been compared with a whole-model reference.
+- Qwen3.5-2B with a JSON schema: on an integer field it wants to write as a decimal, the 2B can keep adding digits until
+  `max_tokens`, because the grammar allows no decimal point there. Nemotron writes the same schema correctly.
+- Qwen3.8-27B on an M1 to M4 Mac: the drafter's landing counts last for the server's life, so after four prose replies
+  greedy code drafts shallower, about 4% slower on an M3 Ultra. The tokens are the same.
+- Qwen3.8-Flash-Next in speed-up mode: a drafted request right after a `"draft": false` one decodes slowly, and the next
+  request is back to speed. The tokens are the same.
+- Qwen3.8-Flash-Next on a Mac: a turn more than `--keep-warm` seconds after the last request (900 by default) takes
+  about 2 s to its first token on an M3 Ultra, even when its prompt is cached, while macOS wires the model again.
+- On a Mac without tensor units (M1 to M4), Flash Next's uniform 6-bit checkpoint decodes different tokens from 1.0.9
+  since 1.0.10's faster products. `FZ_M3_LANES=1` keeps the earlier kernels and their tokens.
+
+## Living Weights (`--slide`)
+
+- Facts about the same subject can overwrite each other, a later fact about the user can disturb an earlier one's
+  answers on a GB10, yes-or-no questions about a changed value are unreliable, facts pile up badly past a few dozen, and
+  thinking on brings back fewer answers. 1.0.8's release notes have the measurements.
+- Learned facts cost decode speed on a Mac. 1.0.9 took back about 8% on an M3 Ultra with two facts; 1.0.8's M5 Ultra
+  figures (213 tok/s after ten facts, 248 before any) have not been measured again.
+- A rollback is all or nothing: `tensorfold slide rollback` returns the folder to its snapshot, undoing every lesson
+  and delete since the first. One fact can be deleted on its own (`DELETE /v1/slide/fact/{id}`), which silences its
+  neurons rather than erasing them. A key keeps other clients from teaching, but anyone with the key can teach a wrong
+  fact. Teach a copy of the checkpoint folder.
+- On file systems without clones, such as ext4, the snapshot is a full copy of the files a lesson can change, 18.5 GB
+  for Nemotron 3.5 Lightning, and the rollback copies them back.
+- The folder hold that keeps a server and a rollback apart works between TensorFold processes only: other tools that
+  write files ignore it.
+
+## Web research (`--cortheon`)
+
+- The instruction filter that removes orders aimed at the model from web text is a heuristic. It reads each line on its
+  own, so an order split across a line break is not seen whole, and a page written to steer the model could still
+  make it put conversation text into the path of a URL it fetches. [docs/cortheon.md](cortheon.md) says what leaves the
+  machine.
+# Living Weights: how to use it
+
+Living Weights teaches a running model new facts. Tell it "I like blue." and a few minutes later it answers "What colour
+do I like?" with blue. The fact goes into the model's own weights, so it is still there after a restart, without
+`--slide`, and on any TensorFold server you start from the same folder, Mac or NVIDIA.
+
+It is not a prompt cache, a retrieval index or an adapter: each fact it keeps becomes about ten new neurons inside the
+model, written into the checkpoint's own safetensors files. Nothing the model already had is changed. It shipped in 1.0.3
+as Sliding Weights (experimental), and its flag and API use the name `slide`.
+
+## What you need
+
+- An Apple-silicon Mac (tested on an M5 Ultra and an M3 Ultra), or an NVIDIA GB10 (DGX Spark) with the CUDA build,
+  with room for the model and a copy of it. On a GB10, `--slide` also keeps about 26 GiB of GPU memory for its
+  trainer; on a Mac the trainer works on the model's own weights.
+- The Nemotron 3.5 Lightning MLX 4-bit checkpoint, the only model it learns into today.
+- A TensorFold build with the pocket learner described here (the release after 1.0.6). A folder taught by 1.0.3 to
+  1.0.6 still serves and answers from what it learned, but `--slide` refuses it: those releases saved lessons into
+  the shared experts the pocket widens. Teach a fresh copy instead.
+
+A folder that learned on either backend serves on the other.
+
+## Quick start
+
+### 1. Install or upgrade TensorFold
+
+```sh
+brew install ashhart/tensorfold/tensorfold    # or: brew upgrade tensorfold
+```
+
+On a GB10, install the `linux-aarch64` archive as the [RUNBOOK](../RUNBOOK.md#linux-and-cuda) shows.
+
+### 2. Get the model and make a copy to teach
+
+Learning rewrites files in the model folder, and so does deleting a fact. The server keeps the folder's original
+files before its first lesson or delete, so `tensorfold slide rollback` can undo them all at once
+([Undo what it learned](#undo-what-it-learned)), but teach a copy and keep the pulled model as it is.
+
+```sh
+tensorfold pull TensorFold/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit
+src=$(ls -d ~/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/* | head -1)
+mkdir -p ~/models
+cp -cRL "$src" ~/models/nemotron-living
+```
+
+Use exactly these `cp` flags. The pulled model lives in the Hugging Face cache, whose folders hold links to shared
+files: `-L` copies the real files, so learning can never write into the cached original, and `-c` makes APFS clones, so
+the copy takes no extra disk until learning changes it. `--slide` refuses a folder whose files are links, so serving the
+cache's own folder stops at startup instead of changing it.
+
+On Linux, copy without `-c` (there are no APFS clones), which takes the checkpoint's full 18.5 GB:
+
+```sh
+cp -RL "$src" ~/models/nemotron-living
+```
+
+### 3. Make a key and start the server with `--slide`
+
+```sh
+(umask 077; openssl rand -hex 24 > ~/models/slide-key)
+tensorfold serve ~/models/nemotron-living --slide --api-key-file ~/models/slide-key \
+  --slide-graph ~/models/nemotron-living-facts.json
+```
+
+`--slide` turns learning on, and it starts only with a key, because any client that reaches the server could otherwise
+rewrite the model's weights. Give it `--api-key-file FILE` (one key a line, readable only by you), `--api-key KEY` or
+`TENSORFOLD_API_KEY`. The server reads the key before it loads the model. It stops with one line naming the cause when
+there is no key, when the key file is missing, empty or readable by other users (`chmod 600` it), or when a key has a
+space in it. Every request then sends the key, as the commands below do; [API keys](api.md#api-keys) has the rest.
+
+`--slide-graph` keeps the list of learned facts in a file, so it survives a restart; without it the list lives in
+me

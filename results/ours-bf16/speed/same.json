@@ -1,0 +1,30 @@
+{
+ "same-300.txt": {
+  "tokens": 283,
+  "sha": "9683a83effdc19a2",
+  "logprobs": false,
+  "text": "This text outlines the rules for handling additional terms and restrictions in l",
+  "sampled_sha": "532d39bb5f877e38"
+ },
+ "same-1k.txt": {
+  "tokens": 1071,
+  "sha": "11359c74dda2fab3",
+  "logprobs": false,
+  "text": "This text documents the API endpoints and behavior of a local LLM server (likely",
+  "sampled_sha": "79a197dfe731c66f"
+ },
+ "fresh-gpl3.txt": {
+  "tokens": 3508,
+  "sha": "31a976b041cbe696",
+  "logprobs": false,
+  "text": "The GNU General Public License Version 3 is a copyleft license designed to guara",
+  "sampled_sha": "8c5268c6beab5c26"
+ },
+ "same-15k.txt": {
+  "tokens": 17182,
+  "sha": "76561f8cb547d985",
+  "logprobs": false,
+  "text": "Based on the text provided, here are the main topics:\n\n1.  **Benchmark Publishin",
+  "sampled_sha": "58b19cacae18311d"
+ }
+}

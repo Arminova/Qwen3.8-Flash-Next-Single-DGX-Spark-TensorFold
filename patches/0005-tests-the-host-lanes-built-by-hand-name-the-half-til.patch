@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?J=C3=BCrgen=20Schmied?=
+ <600316+jschmied@users.noreply.github.com>
+Date: Wed, 21 Oct 2026 17:08:18 +0200
+Subject: [PATCH 5/9] tests: the host lanes built by hand name the half tiles,
+ at threshold 0 for the released 64-column launches
+
+projection_f32_host_tests and the nemotron sm_89 host tests build a qmmf.Lane field by field; they now
+set its half tiles and half_below = 0, so their launch parameters stay the 64-column tile's they check.
+
+(cherry picked from commit b6d7cd466468022f2008490a67235f50673dde19)
+---
+ zig/src/families/nemotron/cuda_sm89_test.zig | 2 ++
+ zig/tests/cuda/projection_f32_host_tests.zig | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/zig/src/families/nemotron/cuda_sm89_test.zig b/zig/src/families/nemotron/cuda_sm89_test.zig
+index e3e544ff..1a4e1160 100644
+--- a/zig/src/families/nemotron/cuda_sm89_test.zig
++++ b/zig/src/families/nemotron/cuda_sm89_test.zig
+@@ -69,6 +69,8 @@ const Fake = struct {
+             f.* = .{ .d = d, .handle = @ptrFromInt(17 + mi * 16 + i) };
+         };
+         for (&l.reduce, 0..) |*f, i| f.* = .{ .d = d, .handle = @ptrFromInt(90 + i) };
++        l.half = @splat(@splat(@splat(.{ .d = d, .handle = @ptrFromInt(120) })));
++        l.half_below = 0; // the released launch parameters: the 64-column tile's
+         return l;
+     }
+     fn kernels(d: *const cuda.Driver, cluster: bool) kern.Kernels {
+diff --git a/zig/tests/cuda/projection_f32_host_tests.zig b/zig/tests/cuda/projection_f32_host_tests.zig
+index 5d38e2e2..41bcb98b 100644
+--- a/zig/tests/cuda/projection_f32_host_tests.zig
++++ b/zig/tests/cuda/projection_f32_host_tests.zig
+@@ -60,6 +60,8 @@ test "every F32 and BF16 fixture dispatch rejects a no-op after a valid stale pr
+         .fns = @splat(@splat(f)),
+         .f32_fns = @splat(@splat(f)),
+         .reduce = @splat(f),
++        .half = @splat(@splat(@splat(f))),
++        .half_below = 0,
+         .clusters = false,
+     };
+     const weight: cuda.qmmf.Weight = .{ .mode = .fp4, .codes = 0, .scales = 0, .n = 70, .k = 1024, .npad = 128 };

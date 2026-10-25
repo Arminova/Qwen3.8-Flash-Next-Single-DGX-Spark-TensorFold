@@ -1,0 +1,239 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?J=C3=BCrgen=20Schmied?=
+ <600316+jschmied@users.noreply.github.com>
+Date: Wed, 21 Oct 2026 07:19:43 +0200
+Subject: [PATCH 4/9] contract: the lane's half tiles replace the 64-column
+ 16-row tile (MXFP8 and BF16), a 1.5x-scale control, gate 5 records
+
+(cherry picked from commit af619a83e1f31fda85eb098ad82d9452e85eba65)
+---
+ zig/src/core/contract/lane_half_records.zig |  13 ++
+ zig/src/core/contract/registry.zig          |   2 +-
+ zig/tests/cuda/contract_lane_half.zig       | 160 ++++++++++++++++++++
+ zig/tests/cuda/contract_tests.zig           |   6 +
+ 4 files changed, 180 insertions(+), 1 deletion(-)
+ create mode 100644 zig/src/core/contract/lane_half_records.zig
+ create mode 100644 zig/tests/cuda/contract_lane_half.zig
+
+diff --git a/zig/src/core/contract/lane_half_records.zig b/zig/src/core/contract/lane_half_records.zig
+new file mode 100644
+index 00000000..24a2bb70
+--- /dev/null
++++ b/zig/src/core/contract/lane_half_records.zig
+@@ -0,0 +1,13 @@
++//! The lane's half tiles (16 rows by 32 columns, MXFP8 and BF16), in registry.cuda; nvcc 13.0.88 cubins.
++const CudaRecord = @import("registry.zig").CudaRecord;
++
++pub const cuda = [_]CudaRecord{
++    .{ .launch = .{ .name = "qmmf MXFP8 16-row half tile", .symbol = "_ZN7tf_qmmf11qmmf_kernelILi2ELi16ELi32ELi1ELi4ELi4ELb0ELb0ELb0EEEvPK13__nv_bfloat16PKhS5_fPvPfiiiiiii", .image = "qmmf", .threads = 128, .dynamic = 16896 }, .usage = .{ .{ .regs = 72, .static = 0, .bound = 128 }, .{ .regs = 72, .static = 0, .bound = 128 }, .{ .regs = 72, .static = 0, .bound = 128 }, .{ .regs = 47, .static = 0, .bound = 128 }, .{ .regs = 47, .static = 0, .bound = 128 } } },
++    .{ .launch = .{ .name = "qmmf MXFP8 16-row half tile, cluster of 8", .symbol = "_ZN7tf_qmmf11qmmf_kernelILi2ELi16ELi32ELi1ELi4ELi4ELb0ELb1ELb0EEEvPK13__nv_bfloat16PKhS5_fPvPfiiiiiii", .image = "qmmf", .threads = 128, .dynamic = 16896, .cluster = 8, .min_sm = 90 }, .usage = .{ .{ .regs = 56, .static = 0, .bound = 128 }, .{ .regs = 56, .static = 0, .bound = 128 }, .{ .regs = 56, .static = 0, .bound = 128 }, .{ .regs = 40, .static = 0, .bound = 128 }, .{ .regs = 40, .static = 0, .bound = 128 } } },
++    .{ .launch = .{ .name = "qmmf MXFP8 16-row half tile, fp32 out", .symbol = "_ZN7tf_qmmf11qmmf_kernelILi2ELi16ELi32ELi1ELi4ELi4ELb1ELb0ELb0EEEvPK13__nv_bfloat16PKhS5_fPvPfiiiiiii", .image = "qmmf", .threads = 128, .dynamic = 16896 }, .usage = .{ .{ .regs = 72, .static = 0, .bound = 128 }, .{ .regs = 72, .static = 0, .bound = 128 }, .{ .regs = 72, .static = 0, .bound = 128 }, .{ .regs = 47, .static = 0, .bound = 128 }, .{ .regs = 47, .static = 0, .bound = 128 } } },
++    .{ .launch = .{ .name = "qmmf MXFP8 16-row half tile, fp32 out, cluster of 8", .symbol = "_ZN7tf_qmmf11qmmf_kernelILi2ELi16ELi32ELi1ELi4ELi4ELb1ELb1ELb0EEEvPK13__nv_bfloat16PKhS5_fPvPfiiiiiii", .image = "qmmf", .threads = 128, .dynamic = 16896, .cluster = 8, .min_sm = 90 }, .usage = .{ .{ .regs = 56, .static = 0, .bound = 128 }, .{ .regs = 56, .static = 0, .bound = 128 }, .{ .regs = 56, .static = 0, .bound = 128 }, .{ .regs = 40, .static = 0, .bound = 128 }, .{ .regs = 40, .static = 0, .bound = 128 } } },
++    .{ .launch = .{ .name = "qmmf BF16 16-row half tile", .symbol = "_ZN7tf_qmmf11qmmf_kernelILi4ELi16ELi32ELi1ELi4ELi4ELb0ELb0ELb0EEEvPK13__nv_bfloat16PKhS5_fPvPfiiiiiii", .image = "qmmf", .threads = 128, .dynamic = 24576 }, .usage = .{ .{ .regs = 72, .static = 0, .bound = 128 }, .{ .regs = 72, .static = 0, .bound = 128 }, .{ .regs = 72, .static = 0, .bound = 128 }, .{ .regs = 39, .static = 0, .bound = 128 }, .{ .regs = 40, .static = 0, .bound = 128 } } },
++    .{ .launch = .{ .name = "qmmf BF16 16-row half tile, cluster of 8", .symbol = "_ZN7tf_qmmf11qmmf_kernelILi4ELi16ELi32ELi1ELi4ELi4ELb0ELb1ELb0EEEvPK13__nv_bfloat16PKhS5_fPvPfiiiiiii", .image = "qmmf", .threads = 128, .dynamic = 24576, .cluster = 8, .min_sm = 90 }, .usage = .{ .{ .regs = 48, .static = 0, .bound = 128 }, .{ .regs = 48, .static = 0, .bound = 128 }, .{ .regs = 48, .static = 0, .bound = 128 }, .{ .regs = 40, .static = 0, .bound = 128 }, .{ .regs = 40, .static = 0, .bound = 128 } } },
++    .{ .launch = .{ .name = "qmmf BF16 16-row half tile, fp32 out", .symbol = "_ZN7tf_qmmf11qmmf_kernelILi4ELi16ELi32ELi1ELi4ELi4ELb1ELb0ELb0EEEvPK13__nv_bfloat16PKhS5_fPvPfiiiiiii", .image = "qmmf", .threads = 128, .dynamic = 24576 }, .usage = .{ .{ .regs = 72, .static = 0, .bound = 128 }, .{ .regs = 72, .static = 0, .bound = 128 }, .{ .regs = 72, .static = 0, .bound = 128 }, .{ .regs = 39, .static = 0, .bound = 128 }, .{ .regs = 40, .static = 0, .bound = 128 } } },
++    .{ .launch = .{ .name = "qmmf BF16 16-row half tile, fp32 out, cluster of 8", .symbol = "_ZN7tf_qmmf11qmmf_kernelILi4ELi16ELi32ELi1ELi4ELi4ELb1ELb1ELb0EEEvPK13__nv_bfloat16PKhS5_fPvPfiiiiiii", .image = "qmmf", .threads = 128, .dynamic = 24576, .cluster = 8, .min_sm = 90 }, .usage = .{ .{ .regs = 48, .static = 0, .bound = 128 }, .{ .regs = 48, .static = 0, .bound = 128 }, .{ .regs = 48, .static = 0, .bound = 128 }, .{ .regs = 40, .static = 0, .bound = 128 }, .{ .regs = 40, .static = 0, .bound = 128 } } },
++};
+diff --git a/zig/src/core/contract/registry.zig b/zig/src/core/contract/registry.zig
+index 90fecc36..80589ce0 100644
+--- a/zig/src/core/contract/registry.zig
++++ b/zig/src/core/contract/registry.zig
+@@ -194,7 +194,7 @@ pub const cuda = @import("flashnext_cuda_records.zig").cuda ++ [_]CudaRecord{
+     .{ .launch = .{ .name = "experts3_prefill down", .symbol = "_ZN19tf_experts3_prefill14prefill_kernelILi1ELi3ELi2ELi2ELi4EEEvPK13__nv_bfloat16iiPK5uint4iiPKiS8_S8_PvifS6_i", .image = "experts3_prefill", .threads = 256, .dynamic = 47104, .opt_in = true }, .usage = .{ .{ .regs = 128, .static = 0, .bound = 256 }, .{ .regs = 128, .static = 0, .bound = 256 }, .{ .regs = 128, .static = 0, .bound = 256 }, .{ .regs = 98, .static = 0, .bound = 256 }, .{ .regs = 98, .static = 0, .bound = 256 } } },
+     .{ .launch = .{ .name = "experts3 tf_experts3_widen", .symbol = "tf_experts3_widen", .image = "experts3", .threads = 256 }, .usage = .{ .{ .regs = 32, .static = 0, .bound = 0 }, .{ .regs = 36, .static = 0, .bound = 0 }, .{ .regs = 36, .static = 0, .bound = 0 }, .{ .regs = 32, .static = 0, .bound = 0 }, .{ .regs = 32, .static = 0, .bound = 0 } } },
+     .{ .launch = .{ .name = "experts3 tf_experts3_planes", .symbol = "tf_experts3_planes", .image = "experts3", .threads = 256 }, .usage = .{ .{ .regs = 26, .static = 0, .bound = 0 }, .{ .regs = 28, .static = 0, .bound = 0 }, .{ .regs = 28, .static = 0, .bound = 0 }, .{ .regs = 36, .static = 0, .bound = 0 }, .{ .regs = 36, .static = 0, .bound = 0 } } },
+-} ++ @import("registry_media.zig").cuda ++ @import("nemotron_prompt_records.zig").cuda ++ @import("glm_cuda_records.zig").cuda ++ @import("registry_shared_attention.zig").records(CudaRecord) ++ @import("gemma_cuda_records.zig").cuda ++ @import("row_cuda_records.zig").cuda ++ @import("flashnext_tile_records.zig").cuda ++ @import("window_rows_records.zig").cuda ++ @import("nvfp4_fact_records.zig").cuda;
++} ++ @import("registry_media.zig").cuda ++ @import("nemotron_prompt_records.zig").cuda ++ @import("glm_cuda_records.zig").cuda ++ @import("registry_shared_attention.zig").records(CudaRecord) ++ @import("gemma_cuda_records.zig").cuda ++ @import("row_cuda_records.zig").cuda ++ @import("flashnext_tile_records.zig").cuda ++ @import("window_rows_records.zig").cuda ++ @import("nvfp4_fact_records.zig").cuda ++ @import("lane_half_records.zig").cuda;
+ 
+ /// The nvcc release `cuda`'s usage records come from: the compiler that builds the release fatbins.
+ pub const cuda_release: limits.Nvcc = .{ .major = 13, .minor = 0 };
+diff --git a/zig/tests/cuda/contract_lane_half.zig b/zig/tests/cuda/contract_lane_half.zig
+new file mode 100644
+index 00000000..ff575821
+--- /dev/null
++++ b/zig/tests/cuda/contract_lane_half.zig
+@@ -0,0 +1,160 @@
++//! The lane's half tiles (16x32, MXFP8 and BF16) under the contract: the 64-column tile's bits; control: 1.5x scale.
++const std = @import("std");
++const cuda = @import("cuda");
++const core = @import("core");
++const contract = core.contract;
++const c = contract.spec;
++const g = contract.gates;
++const Dense = contract.dense.Dense;
++const Rig = @import("contract_rig.zig").Rig;
++
++pub const Kind = enum { mxfp8, bf16, control };
++
++fn depth(shape: c.Shape) usize {
++    return shape.k / 16 + 24;
++}
++
++/// Flash Next's decode calls whose 64-column grids take half tiles, the column edges, and 16 rows.
++const served = [_]c.Shape{
++    .{ .rows = 1, .n = 640, .k = 2560 },  .{ .rows = 1, .n = 2560, .k = 640 }, .{ .rows = 16, .n = 640, .k = 2560 },
++    .{ .rows = 1, .n = 324, .k = 10240 }, .{ .rows = 7, .n = 512, .k = 2560 }, .{ .rows = 3, .n = 96, .k = 512 },
++};
++
++pub fn spec(kind: Kind) c.Spec {
++    return .{
++        .name = switch (kind) {
++            .mxfp8 => "cuda MXFP8 lane half tiles (32 columns, 16 rows)",
++            .bf16 => "cuda BF16 lane half tiles (32 columns, 16 rows)",
++            .control => "control: MXFP8 half tiles at a 1.5x tensor scale posing as the 64-column tile",
++        },
++        .accum = .f32,
++        .depth = depth,
++        .out = .bf16,
++        .replaces = "the 64-column 16-row tile",
++        .tiles = .{ .{ .size = 16 }, .{ .size = 32, .step = 32, .min = 32 }, .{ .size = 512, .step = 64, .min = 64 } },
++        .served = &served,
++    };
++}
++
++pub const Half = struct {
++    rig: Rig,
++    lane: *cuda.qmmf.Lane,
++    kind: Kind,
++    d: ?Dense = null,
++    weight: cuda.qmmf.Weight = undefined,
++    x: u64 = 0,
++    out: u64 = 0,
++    base: u64 = 0,
++    part: u64 = 0,
++
++    pub fn deinit(self: *Half) void {
++        if (self.d) |d| d.deinit();
++        self.rig.deinit();
++    }
++
++    pub fn kernel(self: *Half) g.Kernel {
++        return .{ .spec = spec(self.kind), .ctx = self, .vt = &vt, .control = if (self.kind == .control) .shapes else null };
++    }
++
++    const vt = g.hooks(Half);
++
++    fn mode(self: *const Half) cuda.qmmf.Mode {
++        return if (self.kind == .bf16) .bf16 else .mxfp8;
++    }
++
++    pub fn prepare(self: *Half, shape: c.Shape, fill: g.Fill, seed: u64) !bool {
++        if (self.d) |d| d.deinit();
++        self.d = null;
++        self.rig.reset();
++        self.part = 0;
++        if (shape.rows == 0 or shape.rows > 16 or shape.n == 0 or shape.k == 0 or shape.k % 64 != 0) return false;
++        const a = self.rig.gpu.gpa;
++        const d = try Dense.init(a, shape, 1);
++        self.d = d;
++        d.fillX(fill, seed, 16);
++        var prng = std.Random.DefaultPrng.init(seed ^ 0x4a1f);
++        const random = prng.random();
++        const n = shape.n;
++        const k = shape.k;
++        if (self.mode() == .bf16) {
++            const w = try a.alloc(u16, n * k);
++            defer a.free(w);
++            for (w, 0..) |*v, i| {
++                const f: f32 = if (fill == .stress) @floatFromInt(@as(i32, 1) + @as(i32, @intCast(random.uintLessThan(u32, 8)))) else random.float(f32) * 0.1 - 0.05;
++                v.* = c.toBf16(f);
++                _ = i;
++            }
++            if (fill == .stress) for (0..n) |j| for (k / 2..k) |i| {
++                w[j * k + i] = w[j * k + i - k / 2] | 0x8000;
++            };
++            for (d.w, w) |*o, v| o.* = c.fromBf16(v);
++            const tiled = try a.alloc(u16, cuda.nvfp4.padded(n) * k);
++            defer a.free(tiled);
++            cuda.qmmf.packBf16(tiled, w, n, k);
++            self.weight = cuda.modelopt.bf16Weight(try self.rig.input(std.mem.sliceAsBytes(tiled)), n, k);
++        } else {
++            const codes = try a.alloc(u8, n * k);
++            defer a.free(codes);
++            const scales = try a.alloc(u8, n * k / 32);
++            defer a.free(scales);
++            for (scales) |*s| s.* = if (fill == .stress) 127 else 123 + random.uintLessThan(u8, 8);
++            for (0..n) |j| for (0..k) |i| {
++                codes[j * k + i] = if (fill == .stress) 0x38 + random.uintLessThan(u8, 24) else random.uintLessThan(u8, 0x7f);
++                if (fill != .stress and random.boolean()) codes[j * k + i] |= 0x80;
++            };
++            if (fill == .stress) for (0..n) |j| for (k / 2..k) |i| {
++                codes[j * k + i] = codes[j * k + i - k / 2] | 0x80;
++            };
++            for (0..n) |j| for (0..k) |i| {
++                const scale = std.math.ldexp(@as(f64, 1), @as(i32, scales[j * (k / 32) + i / 32]) - 127);
++                d.w[j * k + i] = core.quant.fp8.e4m3(codes[j * k + i]) * scale;
++            };
++            const npad = cuda.mxfp8.padded(n);
++            const tiled_codes = try a.alloc(u8, npad * k);
++            defer a.free(tiled_codes);
++            const packed_scales = try a.alloc(u8, npad * k / 32);
++            defer a.free(packed_scales);
++            cuda.mxfp8.packCodes(tiled_codes, codes, n, k);
++            cuda.mxfp8.packScales(packed_scales, scales, n, k);
++            self.weight = cuda.mxfp8.weight(try self.rig.input(tiled_codes), try self.rig.input(packed_scales), n, k);
++        }
++        self.x = try self.rig.input(std.mem.sliceAsBytes(d.x));
++        const bytes = self.lane.partBytes(shape.rows, self.weight);
++        if (bytes > 0) self.part = try self.rig.scratch(bytes);
++        self.out = try self.rig.output(shape.rows * n * 2);
++        self.base = try self.rig.scratch(shape.rows * n * 2);
++        return true;
++    }
++
++    fn launch(self: *Half, half: bool, out: u64) !void {
++        const d = self.d.?;
++        const keep = self.lane.half_below;
++        defer self.lane.half_below = keep;
++        self.lane.half_below = if (half) std.math.maxInt(usize) else 0;
++        var w = self.weight;
++        if (half and self.kind == .control) w.scale = 1.5;
++        try self.lane.matmul(self.rig.s, self.x, d.shape.k, d.shape.rows, w, out, self.part);
++        try self.rig.s.synchronize();
++    }
++
++    pub fn run(self: *Half) !void {
++        try self.launch(true, self.out);
++    }
++
++    pub fn replaced(self: *Half) ![]const u8 {
++        try self.launch(false, self.base);
++        return self.rig.bytes(self.base, self.count() * 2);
++    }
++
++    pub fn count(self: *Half) usize {
++        return self.d.?.outputs();
++    }
++
++    pub fn reference(self: *Half, want: []f64, magnitude: []f64) !void {
++        try self.d.?.reference(want, magnitude);
++    }
++
++    pub fn simulate(self: *Half, accumulator: c.Accum, order: g.Order, out: []f64) !void {
++        try self.d.?.simulate(accumulator, order, out);
++    }
++};
+diff --git a/zig/tests/cuda/contract_tests.zig b/zig/tests/cuda/contract_tests.zig
+index 007bbb18..abb02ec9 100644
+--- a/zig/tests/cuda/contract_tests.zig
++++ b/zig/tests/cuda/contract_tests.zig
+@@ -10,6 +10,7 @@ const tail_k = @import("contract_norms_tail.zig");
+ const router_k = @import("contract_router.zig");
+ const mm_k = @import("contract_mm.zig");
+ const mx_k = @import("contract_mxfp8.zig");
++const half_k = @import("contract_lane_half.zig");
+ const wide_k = @import("contract_projection_f32.zig");
+ const rank_k = @import("contract_rank.zig");
+ const writeback_k = @import("contract_flashnext_writeback.zig");
+@@ -193,6 +194,11 @@ pub fn run(gpu: check.Gpu) !void {
+     };
+     defer for (&mx) |*m| m.deinit();
+     for (&mx) |*m| try kernels.append(a, m.kernel());
++    var half_lane = lane;
++    var halves: [3]half_k.Half = undefined;
++    for (std.enums.values(half_k.Kind), &halves) |kind, *h| h.* = .{ .rig = .{ .gpu = gpu, .s = s }, .lane = &half_lane, .kind = kind };
++    defer for (&halves) |*h| h.deinit();
++    for (&halves) |*h| try kernels.append(a, h.kernel());
+     var wide: [wide_k.modes.len * 2]wide_k.Product = undefined;
+     for (wide_k.modes, 0..) |mode, i| {
+         wide[i * 2] = .{ .rig = .{ .gpu = gpu, .s = s }, .lane = &lane, .mode = mode, .clusters = true };

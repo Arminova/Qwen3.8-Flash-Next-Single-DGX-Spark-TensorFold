@@ -1,0 +1,26 @@
+[
+ {
+  "target": 32768,
+  "prompt_tokens": 31410,
+  "completion_tokens": 128,
+  "ttft_s": 13.81,
+  "pp_tok_s": 2274.2,
+  "tg_tok_s": 55.9
+ },
+ {
+  "target": 65536,
+  "prompt_tokens": 63952,
+  "completion_tokens": 128,
+  "ttft_s": 28.81,
+  "pp_tok_s": 2220.0,
+  "tg_tok_s": 53.7
+ },
+ {
+  "target": 110000,
+  "prompt_tokens": 120048,
+  "completion_tokens": 128,
+  "ttft_s": 57.62,
+  "pp_tok_s": 2083.5,
+  "tg_tok_s": 35.3
+ }
+]

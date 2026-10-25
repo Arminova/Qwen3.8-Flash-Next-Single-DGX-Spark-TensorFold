@@ -1,0 +1,150 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Armin <2369138+Arminova@users.noreply.github.com>
+Date: Sun, 25 Oct 2026 19:28:40 +0000
+Subject: [PATCH 8/9] core lanes: burst admission, requests sent together start
+ in lockstep
+
+An idle engine holds a first arrival for TENSORFOLD_ADMIT_WAIT_MS (default 5, 0 turns it off) for requests
+sent with it. When two or more wait, every one is admitted before any launches (so none takes the lone
+driver) and marked a burst; a burst's prompts all fill before the next round. Identical requests then decode
+in lockstep and share each round's expert work.
+
+Same bits per stream (scheduling only): concurrent == alone 28/28 on Flash-Next. GB10, Flash-Next FP4-Local,
+four identical greedy streams: code 165 -> 236 tok/s, chat 119 -> 166; mixed load unchanged.
+---
+ zig/src/core/lane_host.zig       | 21 +++++++++--
+ zig/src/core/lane_host_admit.zig | 61 ++++++++++++++++++++++++++++++++
+ zig/src/core/lane_job.zig        |  1 +
+ 3 files changed, 81 insertions(+), 2 deletions(-)
+
+diff --git a/zig/src/core/lane_host.zig b/zig/src/core/lane_host.zig
+index 68a0ae0f..7ec97ab8 100644
+--- a/zig/src/core/lane_host.zig
++++ b/zig/src/core/lane_host.zig
+@@ -306,6 +306,7 @@ pub const LaneHost = struct {
+         };
+         const job = h.queued.orderedRemove(at);
+         job.noteAdmission();
++        job.burst = false; // admit.burst marks its own
+         job.seq = h.admissions;
+         h.admissions += 1;
+         h.admitted.append(h.gpa, job) catch {
+@@ -363,7 +364,21 @@ pub const LaneHost = struct {
+     /// The next filling job's next prompt chunk: the other streams' rounds run between chunks, not after the prompt.
+     fn fillOne(h: *LaneHost) void {
+         if (h.filling.items.len == 0) return;
+-        const at = fill.next(h);
++        h.fillAt(fill.next(h));
++    }
++
++    /// A burst's prompts (admit.burst) all go in before the next round, so its streams start in lockstep.
++    fn fillBurst(h: *LaneHost) void {
++        while (true) {
++            const at = for (h.filling.items, 0..) |j, i| {
++                if (j.burst) break i;
++            } else return;
++            h.fillAt(at);
++        }
++    }
++
++    /// Filling job `at`'s next prompt chunk; done, it is prefilled and delivered.
++    fn fillAt(h: *LaneHost, at: usize) void {
+         const job = h.filling.items[at];
+         const first = !job.fill_began;
+         job.fill_began = true;
+@@ -528,8 +543,10 @@ pub const LaneHost = struct {
+             rows_host.answer(h);
+             scoring.answer(h);
+             learn.refuse(h);
+-            while (h.admitOne()) {}
++            if (admit.holdBurst(h)) continue; // an idle engine waits briefly for requests sent together
++            if (!admit.burst(h)) while (h.admitOne()) {};
+             h.fillOne();
++            h.fillBurst();
+             h.core.sweep() catch |err| {
+                 ends.failAll(h, @errorName(err));
+                 continue;
+diff --git a/zig/src/core/lane_host_admit.zig b/zig/src/core/lane_host_admit.zig
+index 09b3e6bd..30fc9e1f 100644
+--- a/zig/src/core/lane_host_admit.zig
++++ b/zig/src/core/lane_host_admit.zig
+@@ -3,6 +3,67 @@ const api = @import("engine_api.zig");
+ const LaneHost = @import("lane_host.zig").LaneHost;
+ const Job = LaneHost.Job;
+ const lanes = @import("lanes");
++const std = @import("std");
++
++/// TENSORFOLD_ADMIT_WAIT_MS (5; 0 off): an idle engine holds a first arrival this long for requests sent with it, then
++/// admits them as one burst whose prompts all fill before the first round. Identical requests then decode in lockstep
++/// and share each round's work (the zig-flashnext engine's burst admission, 3 ms there); one request alone waits at
++/// most this. GB10, Flash-Next, 4 identical greedy streams: code 165 -> 236 tok/s, chat 119 -> 166 (10-25).
++pub fn waitMs() u32 {
++    if (wait_ms) |w| return w;
++    const w: u32 = if (std.c.getenv("TENSORFOLD_ADMIT_WAIT_MS")) |v| std.fmt.parseInt(u32, std.mem.span(v), 10) catch 5 else 5;
++    wait_ms = @min(w, 1000);
++    return wait_ms.?;
++}
++var wait_ms: ?u32 = null;
++
++/// An idle engine with a request queued inside the admit window: waits for more until the window ends (or every lane
++/// is asked for). True when it waited (the caller goes round again), false to admit now.
++pub fn holdBurst(h: *LaneHost) bool {
++    const ms = waitMs();
++    if (ms == 0) return false;
++    h.lock();
++    defer h.unlock();
++    if (h.closing or h.core.activeCount() != 0 or h.admitted.items.len != 0 or h.filling.items.len != 0) return false;
++    const n = h.queued.items.len;
++    if (n == 0 or n >= @min(h.info_.lanes, h.memory_lanes orelse h.info_.lanes)) return false;
++    const now = std.Io.Clock.awake.now(h.io).toNanoseconds();
++    const due = h.queued.items[0].submitted + @as(i96, ms) * std.time.ns_per_ms;
++    if (now >= due) return false;
++    h.wake.waitTimeout(h.io, &h.mutex, .{ .duration = .{ .raw = .fromNanoseconds(@intCast(due - now)), .clock = .awake } }) catch {};
++    return true;
++}
++
++/// With the admit window on and an idle engine: every queued request a lane is free for, admitted before any starts
++/// (so none takes the lone driver) and marked a burst; false when fewer than two wait (the usual path then).
++pub fn burst(h: *LaneHost) bool {
++    if (waitMs() == 0) return false;
++    {
++        h.lock();
++        defer h.unlock();
++        if (h.core.activeCount() != 0 or h.admitted.items.len != 0 or h.filling.items.len != 0 or h.queued.items.len < 2) return false;
++    }
++    var jobs: [lanes.Engine.max_together]*Job = undefined;
++    var n: usize = 0;
++    var took = false;
++    while (n < jobs.len) {
++        switch (h.takeJob()) {
++            .none => break,
++            .failed => took = true,
++            .job => |j| {
++                jobs[n] = j;
++                n += 1;
++            },
++        }
++    }
++    for (jobs[0..n]) |job| {
++        took = true;
++        job.burst = true;
++        const at = h.setup(job) orelse continue;
++        _ = h.launch(job, at);
++    }
++    return took;
++}
+ 
+ /// The queued job to admit (its index), or null to hold; the caller holds the lock and a lane is free.
+ pub fn pick(h: *LaneHost) ?usize {
+diff --git a/zig/src/core/lane_job.zig b/zig/src/core/lane_job.zig
+index 89fc7017..ccfc65a6 100644
+--- a/zig/src/core/lane_job.zig
++++ b/zig/src/core/lane_job.zig
+@@ -23,6 +23,7 @@ pub const Job = struct {
+     started: bool = false,
+     prefill_sent: bool = false, // a lone driver's prefilled event went out
+     fill_began: bool = false, // its first prompt chunk ran
++    burst: bool = false, // admitted with others sent together: its prompt fills before the first round (lane_host_admit)
+     submitted: i96 = 0,
+     admitted_ns: ?i96 = null, // first admission only, retained if a background pass later yields
+     fill_wait: usize = 0, // chunk choices it has waited since admission or its last chunk

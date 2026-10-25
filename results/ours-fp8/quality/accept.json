@@ -1,0 +1,191 @@
+[
+ {
+  "kind": "code",
+  "tokens": 384,
+  "wall_s": 5.47,
+  "tok_s": 72.2,
+  "rounds": 81,
+  "drafted": 477,
+  "accepted": 302,
+  "tokens_per_round": 4.74,
+  "keys": [
+   "choices",
+   "created",
+   "exact_mode",
+   "id",
+   "model",
+   "object",
+   "speculative",
+   "tensorfold",
+   "usage"
+  ]
+ },
+ {
+  "kind": "code",
+  "tokens": 384,
+  "wall_s": 4.79,
+  "tok_s": 82.2,
+  "rounds": 65,
+  "drafted": 455,
+  "accepted": 318,
+  "tokens_per_round": 5.91,
+  "keys": [
+   "choices",
+   "created",
+   "exact_mode",
+   "id",
+   "model",
+   "object",
+   "speculative",
+   "tensorfold",
+   "usage"
+  ]
+ },
+ {
+  "kind": "code",
+  "tokens": 384,
+  "wall_s": 5.11,
+  "tok_s": 77.2,
+  "rounds": 73,
+  "drafted": 456,
+  "accepted": 310,
+  "tokens_per_round": 5.26,
+  "keys": [
+   "choices",
+   "created",
+   "exact_mode",
+   "id",
+   "model",
+   "object",
+   "speculative",
+   "tensorfold",
+   "usage"
+  ]
+ },
+ {
+  "kind": "explain",
+  "tokens": 384,
+  "wall_s": 6.71,
+  "tok_s": 58.2,
+  "rounds": 117,
+  "drafted": 437,
+  "accepted": 266,
+  "tokens_per_round": 3.28,
+  "keys": [
+   "choices",
+   "created",
+   "exact_mode",
+   "id",
+   "model",
+   "object",
+   "speculative",
+   "tensorfold",
+   "usage"
+  ]
+ },
+ {
+  "kind": "explain",
+  "tokens": 384,
+  "wall_s": 7.45,
+  "tok_s": 52.4,
+  "rounds": 128,
+  "drafted": 488,
+  "accepted": 255,
+  "tokens_per_round": 3.0,
+  "keys": [
+   "choices",
+   "created",
+   "exact_mode",
+   "id",
+   "model",
+   "object",
+   "speculative",
+   "tensorfold",
+   "usage"
+  ]
+ },
+ {
+  "kind": "explain",
+  "tokens": 384,
+  "wall_s": 7.01,
+  "tok_s": 55.6,
+  "rounds": 121,
+  "drafted": 453,
+  "accepted": 262,
+  "tokens_per_round": 3.17,
+  "keys": [
+   "choices",
+   "created",
+   "exact_mode",
+   "id",
+   "model",
+   "object",
+   "speculative",
+   "tensorfold",
+   "usage"
+  ]
+ },
+ {
+  "kind": "prose",
+  "tokens": 384,
+  "wall_s": 8.74,
+  "tok_s": 44.5,
+  "rounds": 171,
+  "drafted": 433,
+  "accepted": 212,
+  "tokens_per_round": 2.25,
+  "keys": [
+   "choices",
+   "created",
+   "exact_mode",
+   "id",
+   "model",
+   "object",
+   "speculative",
+   "tensorfold",
+   "usage"
+  ]
+ },
+ {
+  "kind": "prose",
+  "tokens": 266,
+  "wall_s": 6.26,
+  "tok_s": 43.2,
+  "rounds": 115,
+  "drafted": 347,
+  "accepted": 156,
+  "tokens_per_round": 2.31,
+  "keys": [
+   "choices",
+   "created",
+   "exact_mode",
+   "id",
+   "model",
+   "object",
+   "speculative",
+   "tensorfold",
+   "usage"
+  ]
+ },
+ {
+  "kind": "german",
+  "tokens": 384,
+  "wall_s": 8.55,
+  "tok_s": 45.5,
+  "rounds": 158,
+  "drafted": 541,
+  "accepted": 225,
+  "tokens_per_round": 2.43,
+  "keys": [
+   "choices",
+   "created",
+   "exact_mode",
+   "id",
+   "model",
+   "object",
+   "speculative",
+   "tensorfold",
+   "usage"
+  ]
+ }
+]
