@@ -4,9 +4,11 @@ or a 128-token reply's text alone where the server refuses logprobs (HTTP 400: F
 one seeded sampled 128-token reply (temperature 1, top_p 0.95, top_k 20, seed 7: the sampled draws' bits);
 writes {file: {"tokens": n, "sha": sha256 of the reply's text and logprobs, "text": first 80 chars}} to OUT. Two runs
 whose shas match produced the same bits on these prompt lengths (the bench prompts are too short for the prompt-tile
-paths). Stdlib only; run with python3 -I."""
+paths). SAME_DRAFT=0: every request with "draft": false (its shas must equal the drafted run's). Stdlib only; run with
+python3 -I."""
 import hashlib
 import json
+import os
 import sys
 import urllib.error
 import urllib.request
@@ -19,6 +21,8 @@ logprobs = True
 def ask(text, sampled=False):
     body = {"model": model, "messages": [{"role": "user", "content": text}], "max_tokens": 48 if logprobs else 128,
             "temperature": 0, "chat_template_kwargs": {"enable_thinking": False}}
+    if os.environ.get("SAME_DRAFT") == "0":
+        body["draft"] = False
     if sampled:
         body.update({"max_tokens": 128, "temperature": 1.0, "top_p": 0.95, "top_k": 20, "seed": 7})
     elif logprobs:

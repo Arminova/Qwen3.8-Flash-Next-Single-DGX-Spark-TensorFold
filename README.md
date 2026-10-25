@@ -97,7 +97,8 @@ checks are from the build these patches make.
 
 - Concurrent requests give the same replies as the same request alone (28 of 28 checks), and drafted replies equal
   `"draft": false`, on the short bench prompts and on the 300- to 15,000-token prompts below
-  (`results/ours-*/quality/bench_concurrent.out`, `results/ours-bf16/exactness/draft-false.json`).
+  (`results/ours-*/quality/bench_concurrent.out`, `results/ours-bf16/exactness/draft-false.json` from
+  `SAME_DRAFT=0 tools/same.py`).
 - A prompt gives the same reply whether the prompt cache serves part of it or not: reply hashes with the cache on
   (resumed prompts) equal those with it off, bf16 and FP8 (`results/ours-*/exactness/cache-on.json` against
   `speed/same.json`).
