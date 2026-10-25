@@ -4,8 +4,8 @@ Qwen3.8-Flash-Next (a mixture of experts with 176B parameters) served on **one**
 [TensorFold](https://github.com/ashhart/TensorFold)'s native engine, tuned for the GB10. OpenAI-compatible API,
 thinking on, the checkpoint's own MTP drafts, 4 streams of 65,536 tokens (or 5 of 262,144 with the FP8 cache).
 
-This repository is TensorFold 1.1.4 plus patches: three open FP4-Local pull requests by @jschmied, and our own work
-for the GB10 (prompt and decode paths, the loader, an MXFP8 language-model head, an optional FP8 KV cache, and
+This repository is TensorFold 1.1.4 plus patches: three FP4-Local pull requests by @jschmied (landed on TensorFold's
+main after 1.1.4, not in a release yet), and our own work for the GB10 (prompt and decode paths, the loader, an MXFP8 language-model head, an optional FP8 KV cache, and
 admission of requests that arrive together). It serves NVIDIA's public FP4-Local checkpoint as published.
 
 ## Numbers
@@ -193,8 +193,9 @@ Engine switches for `EXTRA_ENV` (all on by default; each restores TensorFold's b
 
 ## Upstream
 
-The three PRs in 0001-0007 are open on TensorFold; our changes are not offered upstream yet. Until they are in a
-release, this repository is the way to run them.
+The three PRs in 0001-0007 landed on TensorFold's main on 2026-10-25, after 1.1.4 (with the maintainer's fix-ups; the
+patches here are the PRs as submitted, rebased onto 1.1.4). Our own changes are not offered upstream yet. Until a
+release carries them, this repository is the way to run them.
 
 ## Credits
 
