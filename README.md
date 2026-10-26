@@ -11,106 +11,101 @@ published.
 
 ## Numbers
 
-Measured on one DGX Spark (GB10, 128 GB), checkpoint below, thinking off. "Ours" is this repository's build
-(bf16 cache = the default, FP8 = `KV=fp8`). The other two columns were measured by us on the same machine with
-the same tools: **Stock TF 1.1.5** is TensorFold 1.1.5 before our patches (with the same two settings,
-`TF_FLASHNEXT_DRAFT_HEAD=affine4` and `TF_FLASHNEXT_CHUNK=4096`), and [Mia's TensorFold recipe](https://github.com/MiaAI-Lab/Qwen3.8-Flash-Next-Single-DGX-Spark-TensorFold)
-at `656879f` with its own settings (262,144 x 5, FP8 cache).
+Measured on one DGX Spark (GB10, 128 GB) with the checkpoint below, thinking off, every server at 262,144-token
+windows: **ours with the bf16 cache** (the default, 3 streams), **ours with the FP8 cache** (`KV=fp8`, 5 streams), and
+**stock TensorFold 1.1.5**, the release these patches apply to, at the same 3 streams with the same two settings
+(`TF_FLASHNEXT_DRAFT_HEAD=affine4` and `TF_FLASHNEXT_CHUNK=4096`). Same machine, same tools, same day.
+
+**Mixed load (tok/s, all streams together)**: `tools/bench_concurrent.py --mixed`. Request i takes the code or the
+chat prompt, at temperature 1.0 with its own seed, 256 tokens, 3 reps. From 2 streams up, the rate while every stream
+is generating. This is the closest of these measures to real use.
+
+| Streams | Stock TF 1.1.5 | Ours, bf16 | Ours, FP8 |
+|---:|---:|---:|---:|
+| 1 | 69.3 | **75.3** | 73.3 |
+| 2 | 80.2 | **91.4** | 86.4 |
+| 3 | 96.0 | **116.4** | – |
+| 4 | – | – | **115.1** |
+| 5 | – | – | **129.1** |
+
+**By kind of text (tok/s, and tokens a round)**: `tools/accept_probe.py`, with 3 code, 3 explanation, 2 prose and 1
+German prompt, 384 tokens each, greedy, one stream.
+
+| | Stock TF 1.1.5 | Ours, bf16 | Ours, FP8 |
+|---|---:|---:|---:|
+| Code | 65.3 (4.68) | **74.9** (5.33) | 72.7 (5.14) |
+| Explanations | 48.8 (3.14) | **53.6** (3.16) | 52.5 (3.00) |
+| Prose | 36.2 (2.12) | 41.3 (2.22) | **43.1** (2.26) |
+| German | 39.5 (2.34) | **46.1** (2.42) | **46.1** (2.51) |
+
+**One reply each (tok/s)**: greedy, 256 tokens. One request uses `tools/bench_openai.py` (median of 3); N identical
+requests sent at once use `tools/bench_concurrent.py` (all streams together).
+
+| | Stock TF 1.1.5 | Ours, bf16 | Ours, FP8 |
+|---|---:|---:|---:|
+| Code (`fibonacci-raw`), 1 request | 73.6 | **81.7** | 75.9 |
+| Chat (`gpu-chat-no-think`), 1 request | 45.5 | **49.8** | 46.8 |
+| Same code request x2 / x3 | 129.5 / 179.4 | **143.2 / 194.3** | 132.0 / – |
+| Same chat request x2 / x3 | 81.1 / 113.7 | **90.0 / 122.8** | 84.0 / – |
+| Same code / chat request x5 | – | – | **246.1 / 159.2** |
 
 A greedy request measures one reply. When a change rounds differently, the reply's text changes, and so does how
-well that text drafts: between our builds, the one-request chat number below moved between 49.7 and 57.9 tok/s at
-the same time per round. The first two tables average many texts; compare those first.
+well that text drafts. The two tables above average many texts.
 
-**Mixed load (tok/s, all streams together)** — `tools/bench_concurrent.py --mixed`: request i takes the code or the
-chat prompt, temperature 1.0, its own seed, 256 tokens, 3 reps; at 2 and 4 streams, the rate while every stream is
-generating. The closest of these to real use.
+**Prompts (tok/s)**: `tools/pptg_bench.py`, with a fresh text per size so that no cache helps. The 4K and 16K prompts
+run at the servers above; the longer ones run one stream at a 262,144-token window.
 
-| Streams | Ours, bf16 | Ours, FP8 | Stock TF 1.1.5 | Mia's recipe |
-|---:|---:|---:|---:|---:|
-| 1 | **75.1** | 73.6 | 69.5 | 65.0 |
-| 2 | **91.4** | 87.2 | 80.2 | 81.4 |
-| 4 | **123.0** | 115.6 | 101.7 | 114.6 |
+| Prompt tokens | Stock TF 1.1.5 | Ours, bf16 | Ours, FP8 |
+|---:|---:|---:|---:|
+| ~3,900 | 1,731 | 2,269 | **2,307** |
+| ~15,300 | 1,832 | 2,266 | **2,316** |
+| ~31,400 | 1,781 | 2,260 | **2,303** |
+| ~64,000 | 1,834 | 2,210 | **2,250** |
+| ~146,000 | 1,767 | 2,069 | **2,117** |
+| ~246,000 | 1,700 | 1,858 | **1,967** |
 
-**By kind of text (tok/s, and tokens a round)** — `tools/accept_probe.py`: 3 code, 3 explanation, 2 prose and
-1 German prompt, 384 tokens each, greedy, one stream
+**The prompt cache (time to the first token)**: `tools/cache_bench.py`. One document is sent three times: with a
+question, with a different question (a follow-up), and with the first question again. The prompt cache is left at the
+engine's own size, as this recipe runs it.
 
-| | Ours, bf16 | Ours, FP8 | Mia's recipe |
-|---|---:|---:|---:|
-| Code | **74.7** (5.33) | 73.2 (5.14) | 58.5 (3.92) |
-| Explanations | **53.6** (3.16) | 52.8 (3.00) | 49.5 (3.07) |
-| Prose | 41.2 (2.22) | **42.9** (2.26) | 36.2 (2.08) |
-| German | 45.8 (2.42) | **46.3** (2.51) | 38.4 (2.23) |
+| Document | Stock TF 1.1.5 | Ours, bf16 | Ours, FP8 |
+|---|---|---|---|
+| ~34,000 tokens: first / follow-up / repeat | 19.3 / 3.4 / 0.1 s | 15.5 / 3.3 / 0.2 s | 15.2 / 2.9 / 2.9 s |
+| ~141,000 tokens: first / follow-up | 81.0 / 78.3 s | 72.6 / **4.3 s** | 67.1 / 67.3 s |
+| ~247,000 tokens: first | 146.4 s | 136.1 s | **126.8 s** |
 
-**One reply each (tok/s)** — greedy, 256 tokens: one request (`tools/bench_openai.py`, median of 3), and N identical
-requests sent at once (`tools/bench_concurrent.py`, all streams together ¹)
+The follow-up resumes from the document's kept state when the cache has room for it. At 141,000 tokens only the bf16
+cache had room. At 247,000 tokens none of the three did, so each request processed the whole document again.
 
-| | Ours, bf16 | Ours, FP8 | Stock TF 1.1.5 | Mia's recipe |
-|---|---:|---:|---:|---:|
-| Code (`fibonacci-raw`), 1 request | **81.5** | 75.9 | 73.2 | 67.8 |
-| Chat (`gpu-chat-no-think`), 1 request | 49.7 | 46.9 | 45.3 | **50.9** |
-| Same code request x2 / x4 | **144.3 / 234.6** | 132.7 / 215.6 | 111.4 / 157.8 | 123.7 / 228.6 |
-| Same chat request x2 / x4 | 90.4 / 150.4 | 84.2 / 139.8 | 70.7 / 103.5 | **95.5 / 167.3** |
+**Quality**: a 130-item task suite (math 50, JSON 15, instructions 10, tool calls 20, agent 10, and code 25 in a
+sandbox). Ours scores 123 (bf16) and 124 (FP8); stock TF 1.1.5 scores 122.
 
-¹ Both engines admit requests that arrive together as one group, so the streams run in lockstep and share their
-expert reads; sent 500 ms apart, Mia's recipe did 127.9 / 103.6 and an earlier build of ours 143.9 / 108.6
-(code / chat x4, [`results/lockstep/`](results/lockstep/)).
+**Load and memory**: ours is ready 75 s after start from a warm disk; stock TF 1.1.5 takes 170 s. While the task suite
+ran, at least 37 GB stayed free.
 
-**Prompts (tok/s)** — `tools/pptg_bench.py`, a fresh text per size so no cache helps
-
-| Prompt tokens | Ours, bf16 | Ours, FP8 | Stock TF 1.1.5 | Mia's recipe |
-|---:|---:|---:|---:|---:|
-| ~3,900 | 2,282 | **2,327** | 1,593 | 2,140 |
-| ~15,300 | 2,292 | **2,331** | 1,623 | 2,166 |
-| ~31,400 | 2,255 | **2,316** | — | 2,137 |
-| ~64,000 | 2,206 | **2,264** | — | 2,148 |
-| ~120,000 | 2,065 | **2,171** | — | 2,021 (132K) |
-
-**At Mia's recipe's own setup: FP8 cache, 5 streams of 262,144 tokens** (`KV=fp8`, the same tools)
-
-| | Ours, FP8 | Mia's recipe |
-|---|---:|---:|
-| Mixed load, 1 / 2 / 4 / 5 streams | **73.2 / 86.3** / 114.9 / 128.6 | 65.3 / 80.7 / **115.9 / 134.0** |
-| Code, 1 request | **75.4** | 68.0 |
-| Chat, 1 request | 46.5 | **51.1** |
-| Same code request x2 / x4 / x5 | **133.1** / 216.4 / 247.1 | 125.5 / **228.4 / 272.0** |
-| Same chat request x2 / x4 / x5 | 84.2 / 139.8 / 160.5 | **95.8 / 169.0 / 201.8** |
-| Prompts, ~3,900 / ~15,300 tokens | **2,307 / 2,328** | 2,140 / 2,166 |
-
-At four and five streams Mia's recipe is ahead here. It runs the DeltaNet layers' decode for all streams in one
-launch a layer; ours runs one a stream (in a 5-stream profile, five times the launches and 0.35 s more kernel time).
-That is the next piece to port.
-
-**Quality** — a 130-item task suite (math 50, JSON 15, instructions 10, tool calls 20, agent 10, code 25 in a
-sandbox): ours 123 (bf16) and 124 (FP8); stock TF 1.1.4 122; Mia's recipe 121.
-
-**Load and memory.** Ready in 70-80 s from a warm disk (Mia's recipe: 80 s; stock TF 1.1.4: 140-170 s). With the default
-4 x 65,536 tokens about 37 GB stay free while serving.
-
-Raw results: [`results/`](results/) (ours in `ours-bf16/`, `ours-fp8/` and `ours-fp8-5x262k/`, stock TensorFold 1.1.4
-+ PRs in `tf-1.1.4-prs/`, Mia's recipe in `mia-recipe/`). A dash: not measured with these settings.
-
-Dates and provenance of every file: [`results/README.md`](results/README.md) (TF 1.1.4 + PRs on 2026-10-24, ours on
-10-25, Mia's recipe 10-18 to 10-25 at its own settings). Our speed tables come from one run of the build before the
-last patch (0011 touches only `"draft": false` requests; drafted replies hash the same); quality and the exactness
-checks are from the build these patches make.
+Raw results: [`results/`](results/) (ours in `ours-bf16/` and `ours-fp8/`, stock TensorFold 1.1.5 in `tf-1.1.5/`),
+with dates and provenance in [`results/README.md`](results/README.md).
 
 ## Exactness
 
-- Concurrent requests give the same replies as the same request alone (28 of 28 checks), and drafted replies equal
-  `"draft": false`, on the short bench prompts and on the 300- to 15,000-token prompts below
-  (`results/ours-*/quality/bench_concurrent.out`, `results/ours-bf16/exactness/draft-false.json` from
-  `SAME_DRAFT=0 tools/same.py`).
-- A prompt gives the same reply whether the prompt cache serves part of it or not: reply hashes with the cache on
-  (resumed prompts) equal those with it off, bf16 and FP8 (`results/ours-*/exactness/cache-on.json` against
-  `speed/same.json`).
+- Each concurrent request gives the same reply as the same request alone, in 28 of 28 checks
+  (`bench_concurrent.py --alone --serial`).
+- Drafted replies equal `"draft": false`, on the bench prompts and on 300- to 15,000-token prompts
+  (`results/ours-*/exactness/draft-false.json`).
+- A prompt gives the same reply whether or not the prompt cache serves part of it: reply hashes with the cache on
+  (resumed prompts) equal those with it off, for both bf16 and FP8 (`results/ours-*/exactness/`).
 - Every change was measured against the previous build on the same machine. Changes meant to be exact were checked
-  with reply hashes (`tools/same.py`: greedy and seeded-sampled replies on 300 to 15,000-token prompts, prompts in
+  with reply hashes: `tools/same.py`, greedy and seeded-sampled replies on 300- to 15,000-token prompts (prompts in
   `tools/prompts/`).
-- Replies are **not** bit for bit those of stock TensorFold 1.1.5. Four changes round differently: the MXFP8 prompt
-  tile, bf16 MoE slot rows on prompts, fused multiply-adds in the DeltaNet prompt chain, and the language-model head
-  rounded to MXFP8 at load. The task suite above is the check. The last three can be turned off (Settings).
-- The FP8 cache stores keys and values as 8-bit numbers with one power-of-two scale per position and head: lossy by
-  design (replies differ from the bf16 cache), with the same exactness between requests.
+- Replies are **not** bit for bit those of stock TensorFold 1.1.5, because four changes round differently:
+  - the MXFP8 prompt tile
+  - bf16 MoE slot rows on prompts
+  - fused multiply-adds in the DeltaNet prompt chain
+  - the language-model head, rounded to MXFP8 at load
+
+  The task suite above is the check. The last three can be turned off (see Settings).
+- The FP8 cache stores keys and values as 8-bit numbers, with one power-of-two scale per position and head. It is
+  lossy by design, so its replies differ from the bf16 cache's, and it keeps the same exactness between requests.
 
 ## Requirements
 

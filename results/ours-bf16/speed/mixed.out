@@ -1,6 +1,6 @@
-{"label": "", "prompt": "mixed", "temperature": 1.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 75.1, "per_stream_tps": 75.1, "ttft_s_max": 0.13}
-{"label": "", "prompt": "mixed", "temperature": 1.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 75.0, "per_stream_tps": 46.5, "ttft_s_max": 0.45, "steady_tps": 91.4}
-{"label": "", "prompt": "mixed", "temperature": 1.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 101.7, "per_stream_tps": 27.5, "ttft_s_max": 1.65, "steady_tps": 123.0}
+{"label": "", "prompt": "mixed", "temperature": 1.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 75.3, "per_stream_tps": 75.3, "ttft_s_max": 0.13}
+{"label": "", "prompt": "mixed", "temperature": 1.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 74.8, "per_stream_tps": 47.5, "ttft_s_max": 0.29, "steady_tps": 91.4}
+{"label": "", "prompt": "mixed", "temperature": 1.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 93.7, "per_stream_tps": 38.7, "ttft_s_max": 0.42, "steady_tps": 116.4}
 {
  "label": "",
  "tokens": 256,
@@ -12,16 +12,16 @@
    "streams": 1,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 75.1,
-   "per_stream_tps": 75.1,
+   "aggregate_tps": 75.3,
+   "per_stream_tps": 75.3,
    "ttft_s_max": 0.13,
    "reps": [
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 75.05593667301514,
+     "aggregate_tps": 75.25302357285737,
      "per_stream_tps": [
-      75.1
+      75.3
      ],
      "ttft_s": [
       0.13
@@ -41,17 +41,17 @@
      ],
      "client_intervals": [
       {
-       "start": 1639477.923876809,
-       "end": 1639481.447903134
+       "start": 1649458.604445772,
+       "end": 1649462.122060565
       }
      ]
     },
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 75.3571343256309,
+     "aggregate_tps": 75.30411596085825,
      "per_stream_tps": [
-      75.4
+      75.3
      ],
      "ttft_s": [
       0.13
@@ -71,15 +71,15 @@
      ],
      "client_intervals": [
       {
-       "start": 1639481.448392558,
-       "end": 1639484.959439394
+       "start": 1649462.122949504,
+       "end": 1649465.641047685
       }
      ]
     },
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 73.45116920056006,
+     "aggregate_tps": 73.54954013893905,
      "per_stream_tps": [
       73.5
      ],
@@ -101,8 +101,8 @@
      ],
      "client_intervals": [
       {
-       "start": 1639484.959884082,
-       "end": 1639488.559455877
+       "start": 1649465.641475731,
+       "end": 1649469.240285223
       }
      ]
     }
@@ -114,23 +114,23 @@
    "streams": 2,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 75.0,
-   "per_stream_tps": 46.5,
-   "ttft_s_max": 0.45,
+   "aggregate_tps": 74.8,
+   "per_stream_tps": 47.5,
+   "ttft_s_max": 0.29,
    "steady_tps": 91.4,
    "reps": [
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 72.77642304204706,
-     "steady_tps": 91.0068357571781,
+     "aggregate_tps": 74.67742601598678,
+     "steady_tps": 91.63849560004084,
      "per_stream_tps": [
-      54.6,
-      38.1
+      56.8,
+      38.2
      ],
      "ttft_s": [
       0.13,
-      0.45
+      0.29
      ],
      "errors": [],
      "evidence": [
@@ -157,27 +157,27 @@
      ],
      "client_intervals": [
       {
-       "start": 1639488.560326229,
-       "end": 1639493.355964586
+       "start": 1649469.241104675,
+       "end": 1649473.866221799
       },
       {
-       "start": 1639488.560245573,
-       "end": 1639495.697136886
+       "start": 1649469.240984564,
+       "end": 1649476.203538774
       }
      ]
     },
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 75.0091277162139,
-     "steady_tps": 91.40080619645101,
+     "aggregate_tps": 74.89222944277061,
+     "steady_tps": 91.37300266217814,
      "per_stream_tps": [
-      56.9,
-      38.4
+      56.8,
+      38.3
      ],
      "ttft_s": [
       0.13,
-      0.28
+      0.29
      ],
      "errors": [],
      "evidence": [
@@ -204,27 +204,27 @@
      ],
      "client_intervals": [
       {
-       "start": 1639495.698116246,
-       "end": 1639500.309672128
+       "start": 1649476.204643824,
+       "end": 1649480.825600665
       },
       {
-       "start": 1639495.697796054,
-       "end": 1639502.625781927
+       "start": 1649476.204350977,
+       "end": 1649483.145571561
       }
      ]
     },
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 74.99672196091946,
-     "steady_tps": 91.7343835319016,
+     "aggregate_tps": 74.78183978588744,
+     "steady_tps": 91.20241450458865,
      "per_stream_tps": [
-      56.9,
-      38.4
+      56.7,
+      38.3
      ],
      "ttft_s": [
       0.13,
-      0.28
+      0.29
      ],
      "errors": [],
      "evidence": [
@@ -251,12 +251,12 @@
      ],
      "client_intervals": [
       {
-       "start": 1639502.626472695,
-       "end": 1639507.235582545
+       "start": 1649483.146441748,
+       "end": 1649487.776407165
       },
       {
-       "start": 1639502.626365863,
-       "end": 1639509.553096304
+       "start": 1649483.146224613,
+       "end": 1649490.098763512
       }
      ]
     }
@@ -265,30 +265,28 @@
   {
    "prompt": "mixed",
    "temperature": 1.0,
-   "streams": 4,
+   "streams": 3,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 101.7,
-   "per_stream_tps": 27.5,
-   "ttft_s_max": 1.65,
-   "steady_tps": 123.0,
+   "aggregate_tps": 93.7,
+   "per_stream_tps": 38.7,
+   "ttft_s_max": 0.42,
+   "steady_tps": 116.4,
    "reps": [
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 90.97644823426539,
-     "steady_tps": 120.60867837519086,
+     "aggregate_tps": 93.6359269169928,
+     "steady_tps": 115.39964310983595,
      "per_stream_tps": [
-      33.8,
-      26.3,
-      28.4,
-      24.6
+      47.3,
+      32.3,
+      38.5
      ],
      "ttft_s": [
       0.25,
-      1.65,
-      0.13,
-      0.81
+      0.41,
+      0.13
      ],
      "errors": [],
      "evidence": [
@@ -321,53 +319,37 @@
        "token_sha": "5f09363a5dfa",
        "token_sha256": "5f09363a5dfa120a33adf54d32dcec7b802e3174dcb6e47d8da4d3b7c915bc69",
        "output_sha256": "d92c8a8b2203248656e80f271b653c89b5e3238b3608ae3044442011d7c32346"
-      },
-      {
-       "prompt_tokens": 31,
-       "cached_tokens": 0,
-       "tokens": 256,
-       "cache_state": "cold",
-       "complete": true,
-       "token_sha": "725301eda7da",
-       "token_sha256": "725301eda7da9c658f3e25817acaf416fd2b8f4b61e26eda503f17e7f3015be2",
-       "output_sha256": "54b3a82c72bebbb359a8e48d8c836689b962587537989e679c799e0e9f76782a"
       }
      ],
      "client_intervals": [
       {
-       "start": 1639509.554639728,
-       "end": 1639517.352743259
+       "start": 1649490.100319984,
+       "end": 1649495.747708842
       },
       {
-       "start": 1639509.555080272,
-       "end": 1639520.892077407
+       "start": 1649490.099896723,
+       "end": 1649498.399816357
       },
       {
-       "start": 1639509.554856,
-       "end": 1639518.662232378
-      },
-      {
-       "start": 1639509.554525552,
-       "end": 1639520.748521233
+       "start": 1649490.099774195,
+       "end": 1649496.852386164
       }
      ]
     },
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 102.00654770884162,
-     "steady_tps": 123.39207369649938,
+     "aggregate_tps": 93.79825697182747,
+     "steady_tps": 116.6872188639314,
      "per_stream_tps": [
-      41.3,
-      26.7,
-      32.8,
-      26.3
+      47.5,
+      32.4,
+      38.7
      ],
      "ttft_s": [
+      0.25,
       0.41,
-      0.58,
-      0.12,
-      0.28
+      0.13
      ],
      "errors": [],
      "evidence": [
@@ -400,53 +382,37 @@
        "token_sha": "5f09363a5dfa",
        "token_sha256": "5f09363a5dfa120a33adf54d32dcec7b802e3174dcb6e47d8da4d3b7c915bc69",
        "output_sha256": "d92c8a8b2203248656e80f271b653c89b5e3238b3608ae3044442011d7c32346"
-      },
-      {
-       "prompt_tokens": 31,
-       "cached_tokens": 0,
-       "tokens": 256,
-       "cache_state": "cold",
-       "complete": true,
-       "token_sha": "725301eda7da",
-       "token_sha256": "725301eda7da9c658f3e25817acaf416fd2b8f4b61e26eda503f17e7f3015be2",
-       "output_sha256": "54b3a82c72bebbb359a8e48d8c836689b962587537989e679c799e0e9f76782a"
       }
      ],
      "client_intervals": [
       {
-       "start": 1639520.893373886,
-       "end": 1639527.476317388
+       "start": 1649498.401499612,
+       "end": 1649504.02845107
       },
       {
-       "start": 1639520.893680462,
-       "end": 1639531.018398831
+       "start": 1649498.402136889,
+       "end": 1649506.686781788
       },
       {
-       "start": 1639520.89376675,
-       "end": 1639528.787489383
-      },
-      {
-       "start": 1639520.893256622,
-       "end": 1639530.872259051
+       "start": 1649498.401400349,
+       "end": 1649505.128652835
       }
      ]
     },
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 101.74197517950591,
-     "steady_tps": 122.99298022042713,
+     "aggregate_tps": 93.67216420416891,
+     "steady_tps": 116.38224052598268,
      "per_stream_tps": [
-      41.1,
-      26.7,
-      32.7,
-      26.2
+      46.2,
+      32.4,
+      39.3
      ],
      "ttft_s": [
-      0.41,
-      0.58,
       0.13,
-      0.28
+      0.42,
+      0.26
      ],
      "errors": [],
      "evidence": [
@@ -479,34 +445,20 @@
        "token_sha": "5f09363a5dfa",
        "token_sha256": "5f09363a5dfa120a33adf54d32dcec7b802e3174dcb6e47d8da4d3b7c915bc69",
        "output_sha256": "d92c8a8b2203248656e80f271b653c89b5e3238b3608ae3044442011d7c32346"
-      },
-      {
-       "prompt_tokens": 31,
-       "cached_tokens": 0,
-       "tokens": 256,
-       "cache_state": "cold",
-       "complete": true,
-       "token_sha": "725301eda7da",
-       "token_sha256": "725301eda7da9c658f3e25817acaf416fd2b8f4b61e26eda503f17e7f3015be2",
-       "output_sha256": "54b3a82c72bebbb359a8e48d8c836689b962587537989e679c799e0e9f76782a"
       }
      ],
      "client_intervals": [
       {
-       "start": 1639531.01946547,
-       "end": 1639537.631405955
+       "start": 1649506.68803727,
+       "end": 1649512.333111209
       },
       {
-       "start": 1639531.019824334,
-       "end": 1639541.171636507
+       "start": 1649506.688589939,
+       "end": 1649514.983689441
       },
       {
-       "start": 1639531.01994611,
-       "end": 1639538.942939741
-      },
-      {
-       "start": 1639531.019369022,
-       "end": 1639541.025196177
+       "start": 1649506.687861286,
+       "end": 1649513.432229833
       }
      ]
     }

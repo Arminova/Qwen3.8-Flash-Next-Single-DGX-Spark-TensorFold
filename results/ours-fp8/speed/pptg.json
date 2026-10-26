@@ -1,18 +1,18 @@
 [
  {
   "target": 4096,
-  "prompt_tokens": 3877,
+  "prompt_tokens": 3873,
   "completion_tokens": 128,
-  "ttft_s": 1.67,
-  "pp_tok_s": 2327.3,
-  "tg_tok_s": 57.8
+  "ttft_s": 1.68,
+  "pp_tok_s": 2306.8,
+  "tg_tok_s": 58.1
  },
  {
   "target": 16384,
-  "prompt_tokens": 15277,
+  "prompt_tokens": 15291,
   "completion_tokens": 128,
-  "ttft_s": 6.55,
-  "pp_tok_s": 2330.7,
-  "tg_tok_s": 56.0
+  "ttft_s": 6.6,
+  "pp_tok_s": 2315.7,
+  "tg_tok_s": 49.7
  }
 ]

@@ -3,4 +3,4 @@
   instruct  8/10
   tools     20/20
   agent     8/10
-  truncated: 1  (code: scripts/sandbox-code.sh fn-gb10-23-quick-fp8)
+  truncated: 1  (code: scripts/sandbox-code.sh fn-gb10-115-q262f)

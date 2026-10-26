@@ -1,0 +1,6 @@
+  gsm8k     46/50
+  json      15/15
+  instruct  8/10
+  tools     20/20
+  agent     8/10
+  truncated: 3  (code: scripts/sandbox-code.sh fn-stock-115-q262)

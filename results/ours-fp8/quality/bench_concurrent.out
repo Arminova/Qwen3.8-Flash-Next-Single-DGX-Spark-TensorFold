@@ -1,9 +1,9 @@
-{"label": "", "prompt": "code", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 75.2, "per_stream_tps": 75.2, "ttft_s_max": 0.13, "alone": {"equal": 2, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
-{"label": "", "prompt": "code", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 131.9, "per_stream_tps": 67.2, "ttft_s_max": 0.26, "steady_tps": 135.5, "alone": {"equal": 4, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
-{"label": "", "prompt": "code", "temperature": 0.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 212.3, "per_stream_tps": 55.4, "ttft_s_max": 0.54, "steady_tps": 228.7, "alone": {"equal": 8, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
-{"label": "", "prompt": "chat", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 46.9, "per_stream_tps": 47.0, "ttft_s_max": 0.16, "alone": {"equal": 2, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
-{"label": "", "prompt": "chat", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 84.1, "per_stream_tps": 42.7, "ttft_s_max": 0.33, "steady_tps": 86.0, "alone": {"equal": 4, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
-{"label": "", "prompt": "chat", "temperature": 0.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 138.9, "per_stream_tps": 36.0, "ttft_s_max": 0.66, "steady_tps": 147.5, "alone": {"equal": 8, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
+{"label": "", "prompt": "code", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 75.1, "per_stream_tps": 75.1, "ttft_s_max": 0.13, "alone": {"equal": 2, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
+{"label": "", "prompt": "code", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 131.6, "per_stream_tps": 66.9, "ttft_s_max": 0.26, "steady_tps": 135.0, "alone": {"equal": 4, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
+{"label": "", "prompt": "code", "temperature": 0.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 214.5, "per_stream_tps": 55.9, "ttft_s_max": 0.52, "steady_tps": 229.8, "alone": {"equal": 8, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
+{"label": "", "prompt": "chat", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 47.0, "per_stream_tps": 47.0, "ttft_s_max": 0.17, "alone": {"equal": 2, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
+{"label": "", "prompt": "chat", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 84.0, "per_stream_tps": 42.5, "ttft_s_max": 0.33, "steady_tps": 85.8, "alone": {"equal": 4, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
+{"label": "", "prompt": "chat", "temperature": 0.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 138.8, "per_stream_tps": 35.9, "ttft_s_max": 0.65, "steady_tps": 146.9, "alone": {"equal": 8, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
 {
  "label": "",
  "tokens": 256,
@@ -15,8 +15,8 @@
    "streams": 1,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 75.2,
-   "per_stream_tps": 75.2,
+   "aggregate_tps": 75.1,
+   "per_stream_tps": 75.1,
    "ttft_s_max": 0.13,
    "alone": {
     "equal": 2,
@@ -32,65 +32,7 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 75.28396687406986,
-     "per_stream_tps": [
-      75.3
-     ],
-     "ttft_s": [
-      0.13
-     ],
-     "errors": [],
-     "evidence": [
-      {
-       "prompt_tokens": 14,
-       "cached_tokens": 0,
-       "tokens": 256,
-       "cache_state": "cold",
-       "complete": true,
-       "token_sha": "0aba50b212b7",
-       "token_sha256": "0aba50b212b7dc0fa489160867722ff883625b0e808c63df813573eb0f2740cf",
-       "output_sha256": "6e78abb3007f79bb13919c548176be2b4429d4b96f270e722d041d77cd3f54de"
-      }
-     ],
-     "client_intervals": [
-      {
-       "start": 1643990.825877371,
-       "end": 1643994.346038364
-      }
-     ],
-     "equal_alone": [
-      true
-     ],
-     "comparisons": [
-      {
-       "concurrent": {
-        "tokens": 256,
-        "token_sha256": "0aba50b212b7dc0fa489160867722ff883625b0e808c63df813573eb0f2740cf",
-        "output_sha256": "6e78abb3007f79bb13919c548176be2b4429d4b96f270e722d041d77cd3f54de",
-        "complete": true,
-        "error": null
-       },
-       "alone": {
-        "tokens": 256,
-        "token_sha256": "0aba50b212b7dc0fa489160867722ff883625b0e808c63df813573eb0f2740cf",
-        "output_sha256": "6e78abb3007f79bb13919c548176be2b4429d4b96f270e722d041d77cd3f54de",
-        "complete": true,
-        "error": null
-       },
-       "serial": {
-        "tokens": 256,
-        "token_sha256": "0aba50b212b7dc0fa489160867722ff883625b0e808c63df813573eb0f2740cf",
-        "output_sha256": "6e78abb3007f79bb13919c548176be2b4429d4b96f270e722d041d77cd3f54de",
-        "complete": true,
-        "error": null
-       }
-      }
-     ]
-    },
-    {
-     "failed": 0,
-     "unmeasured": 0,
-     "aggregate_tps": 75.1878172890967,
+     "aggregate_tps": 75.18372130617865,
      "per_stream_tps": [
       75.2
      ],
@@ -112,8 +54,66 @@
      ],
      "client_intervals": [
       {
-       "start": 1643994.346531546,
-       "end": 1643997.869328261
+       "start": 1655019.93038331,
+       "end": 1655023.45505978
+      }
+     ],
+     "equal_alone": [
+      true
+     ],
+     "comparisons": [
+      {
+       "concurrent": {
+        "tokens": 256,
+        "token_sha256": "0aba50b212b7dc0fa489160867722ff883625b0e808c63df813573eb0f2740cf",
+        "output_sha256": "6e78abb3007f79bb13919c548176be2b4429d4b96f270e722d041d77cd3f54de",
+        "complete": true,
+        "error": null
+       },
+       "alone": {
+        "tokens": 256,
+        "token_sha256": "0aba50b212b7dc0fa489160867722ff883625b0e808c63df813573eb0f2740cf",
+        "output_sha256": "6e78abb3007f79bb13919c548176be2b4429d4b96f270e722d041d77cd3f54de",
+        "complete": true,
+        "error": null
+       },
+       "serial": {
+        "tokens": 256,
+        "token_sha256": "0aba50b212b7dc0fa489160867722ff883625b0e808c63df813573eb0f2740cf",
+        "output_sha256": "6e78abb3007f79bb13919c548176be2b4429d4b96f270e722d041d77cd3f54de",
+        "complete": true,
+        "error": null
+       }
+      }
+     ]
+    },
+    {
+     "failed": 0,
+     "unmeasured": 0,
+     "aggregate_tps": 74.94936617435944,
+     "per_stream_tps": [
+      74.9
+     ],
+     "ttft_s": [
+      0.13
+     ],
+     "errors": [],
+     "evidence": [
+      {
+       "prompt_tokens": 14,
+       "cached_tokens": 0,
+       "tokens": 256,
+       "cache_state": "cold",
+       "complete": true,
+       "token_sha": "0aba50b212b7",
+       "token_sha256": "0aba50b212b7dc0fa489160867722ff883625b0e808c63df813573eb0f2740cf",
+       "output_sha256": "6e78abb3007f79bb13919c548176be2b4429d4b96f270e722d041d77cd3f54de"
+      }
+     ],
+     "client_intervals": [
+      {
+       "start": 1655023.455548274,
+       "end": 1655026.989287119
       }
      ],
      "equal_alone": [
@@ -153,10 +153,10 @@
    "streams": 2,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 131.9,
-   "per_stream_tps": 67.2,
+   "aggregate_tps": 131.6,
+   "per_stream_tps": 66.9,
    "ttft_s_max": 0.26,
-   "steady_tps": 135.5,
+   "steady_tps": 135.0,
    "alone": {
     "equal": 4,
     "unequal": 0,
@@ -171,11 +171,11 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 131.90576441619186,
-     "steady_tps": 135.50591612717815,
+     "aggregate_tps": 131.48407322458195,
+     "steady_tps": 134.8429804467454,
      "per_stream_tps": [
-      66.0,
-      68.3
+      65.7,
+      68.0
      ],
      "ttft_s": [
       0.13,
@@ -206,12 +206,12 @@
      ],
      "client_intervals": [
       {
-       "start": 1643997.87035205,
-       "end": 1644001.867061881
+       "start": 1655026.990083677,
+       "end": 1655031.001206429
       },
       {
-       "start": 1643997.870123778,
-       "end": 1644001.867377224
+       "start": 1655026.989990909,
+       "end": 1655031.001578972
       }
      ],
      "equal_alone": [
@@ -270,15 +270,15 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 131.8910923401179,
-     "steady_tps": 135.55481756731368,
+     "aggregate_tps": 131.69430774063648,
+     "steady_tps": 135.07975847341922,
      "per_stream_tps": [
-      65.9,
-      68.3
+      68.1,
+      65.8
      ],
      "ttft_s": [
-      0.13,
-      0.26
+      0.26,
+      0.14
      ],
      "errors": [],
      "evidence": [
@@ -305,12 +305,12 @@
      ],
      "client_intervals": [
       {
-       "start": 1644001.868072486,
-       "end": 1644005.86503648
+       "start": 1655031.002235434,
+       "end": 1655035.010102133
       },
       {
-       "start": 1644001.867934295,
-       "end": 1644005.864744752
+       "start": 1655031.00215361,
+       "end": 1655035.010315381
       }
      ],
      "equal_alone": [
@@ -374,10 +374,10 @@
    "streams": 4,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 212.3,
-   "per_stream_tps": 55.4,
-   "ttft_s_max": 0.54,
-   "steady_tps": 228.7,
+   "aggregate_tps": 214.5,
+   "per_stream_tps": 55.9,
+   "ttft_s_max": 0.52,
+   "steady_tps": 229.8,
    "alone": {
     "equal": 8,
     "unequal": 0,
@@ -392,19 +392,19 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 210.0960949290346,
-     "steady_tps": 226.31745190767697,
+     "aggregate_tps": 213.7067907123459,
+     "steady_tps": 229.16052565579537,
      "per_stream_tps": [
-      52.5,
-      57.4,
-      55.5,
-      54.0
+      56.5,
+      54.9,
+      58.1,
+      53.4
      ],
      "ttft_s": [
-      0.13,
-      0.54,
       0.39,
-      0.26
+      0.26,
+      0.52,
+      0.14
      ],
      "errors": [],
      "evidence": [
@@ -451,20 +451,20 @@
      ],
      "client_intervals": [
       {
-       "start": 1644005.865860445,
-       "end": 1644010.846319002
+       "start": 1655035.011519553,
+       "end": 1655039.919947071
       },
       {
-       "start": 1644005.866216588,
-       "end": 1644010.846661225
+       "start": 1655035.011307426,
+       "end": 1655039.919375072
       },
       {
-       "start": 1644005.866613227,
-       "end": 1644010.846594457
+       "start": 1655035.01139533,
+       "end": 1655039.920328141
       },
       {
-       "start": 1644005.865775086,
-       "end": 1644010.846972472
+       "start": 1655035.011226754,
+       "end": 1655039.919843727
       }
      ],
      "equal_alone": [
@@ -571,18 +571,18 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 214.55936018532822,
-     "steady_tps": 231.02317202623414,
+     "aggregate_tps": 215.22258911193362,
+     "steady_tps": 230.38775973686472,
      "per_stream_tps": [
+      58.4,
       56.8,
-      53.6,
-      58.6,
-      55.2
+      53.8,
+      55.3
      ],
      "ttft_s": [
-      0.39,
+      0.51,
+      0.38,
       0.13,
-      0.53,
       0.26
      ],
      "errors": [],
@@ -630,20 +630,20 @@
      ],
      "client_intervals": [
       {
-       "start": 1644010.847988869,
-       "end": 1644015.728233669
+       "start": 1655039.921388058,
+       "end": 1655044.792990853
       },
       {
-       "start": 1644010.848183844,
-       "end": 1644015.728300197
+       "start": 1655039.921293771,
+       "end": 1655044.793390244
       },
       {
-       "start": 1644010.848089637,
-       "end": 1644015.72860698
+       "start": 1655039.921041547,
+       "end": 1655044.79271287
       },
       {
-       "start": 1644010.847914933,
-       "end": 1644015.72814207
+       "start": 1655039.920932844,
+       "end": 1655044.792587638
       }
      ],
      "equal_alone": [
@@ -755,9 +755,9 @@
    "streams": 1,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 46.9,
+   "aggregate_tps": 47.0,
    "per_stream_tps": 47.0,
-   "ttft_s_max": 0.16,
+   "ttft_s_max": 0.17,
    "alone": {
     "equal": 2,
     "unequal": 0,
@@ -772,7 +772,7 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 46.96895887281269,
+     "aggregate_tps": 46.95436129479204,
      "per_stream_tps": [
       47.0
      ],
@@ -794,8 +794,8 @@
      ],
      "client_intervals": [
       {
-       "start": 1644031.932850938,
-       "end": 1644037.526423863
+       "start": 1655060.908175996,
+       "end": 1655066.504089089
       }
      ],
      "equal_alone": [
@@ -830,12 +830,12 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 46.9167539021035,
+     "aggregate_tps": 46.99393930255345,
      "per_stream_tps": [
-      46.9
+      47.0
      ],
      "ttft_s": [
-      0.16
+      0.17
      ],
      "errors": [],
      "evidence": [
@@ -852,8 +852,8 @@
      ],
      "client_intervals": [
       {
-       "start": 1644037.527096293,
-       "end": 1644043.125495641
+       "start": 1655066.504728671,
+       "end": 1655072.097442481
       }
      ],
      "equal_alone": [
@@ -893,10 +893,10 @@
    "streams": 2,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 84.1,
-   "per_stream_tps": 42.7,
+   "aggregate_tps": 84.0,
+   "per_stream_tps": 42.5,
    "ttft_s_max": 0.33,
-   "steady_tps": 86.0,
+   "steady_tps": 85.8,
    "alone": {
     "equal": 4,
     "unequal": 0,
@@ -911,15 +911,15 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 84.06568270925273,
-     "steady_tps": 85.95195630742153,
+     "aggregate_tps": 83.92209932517765,
+     "steady_tps": 85.72019686094022,
      "per_stream_tps": [
-      43.2,
+      43.1,
       42.0
      ],
      "ttft_s": [
       0.33,
-      0.16
+      0.17
      ],
      "errors": [],
      "evidence": [
@@ -946,12 +946,12 @@
      ],
      "client_intervals": [
       {
-       "start": 1644043.12644847,
-       "end": 1644049.357303765
+       "start": 1655072.098425422,
+       "end": 1655078.341091208
       },
       {
-       "start": 1644043.126330982,
-       "end": 1644049.357154693
+       "start": 1655072.098157247,
+       "end": 1655078.340370202
       }
      ],
      "equal_alone": [
@@ -1010,140 +1010,14 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 84.10567736293234,
-     "steady_tps": 86.00773054214719,
+     "aggregate_tps": 84.00183716632355,
+     "steady_tps": 85.82595151348066,
      "per_stream_tps": [
-      43.2,
-      42.1
+      42.0,
+      43.2
      ],
      "ttft_s": [
-      0.33,
-      0.16
-     ],
-     "errors": [],
-     "evidence": [
-      {
-       "prompt_tokens": 31,
-       "cached_tokens": 0,
-       "tokens": 256,
-       "cache_state": "cold",
-       "complete": true,
-       "token_sha": "a37ae5eafccb",
-       "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
-       "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4"
-      },
-      {
-       "prompt_tokens": 31,
-       "cached_tokens": 0,
-       "tokens": 256,
-       "cache_state": "cold",
-       "complete": true,
-       "token_sha": "a37ae5eafccb",
-       "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
-       "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4"
-      }
-     ],
-     "client_intervals": [
-      {
-       "start": 1644049.358000115,
-       "end": 1644055.585302225
-      },
-      {
-       "start": 1644049.357926403,
-       "end": 1644055.585120882
-      }
-     ],
-     "equal_alone": [
-      true,
-      true
-     ],
-     "comparisons": [
-      {
-       "concurrent": {
-        "tokens": 256,
-        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
-        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4",
-        "complete": true,
-        "error": null
-       },
-       "alone": {
-        "tokens": 256,
-        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
-        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4",
-        "complete": true,
-        "error": null
-       },
-       "serial": {
-        "tokens": 256,
-        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
-        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4",
-        "complete": true,
-        "error": null
-       }
-      },
-      {
-       "concurrent": {
-        "tokens": 256,
-        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
-        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4",
-        "complete": true,
-        "error": null
-       },
-       "alone": {
-        "tokens": 256,
-        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
-        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4",
-        "complete": true,
-        "error": null
-       },
-       "serial": {
-        "tokens": 256,
-        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
-        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4",
-        "complete": true,
-        "error": null
-       }
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "prompt": "chat",
-   "temperature": 0.0,
-   "streams": 4,
-   "failed": 0,
-   "unmeasured": 0,
-   "aggregate_tps": 138.9,
-   "per_stream_tps": 36.0,
-   "ttft_s_max": 0.66,
-   "steady_tps": 147.5,
-   "alone": {
-    "equal": 8,
-    "unequal": 0,
-    "failed": 0
-   },
-   "serial": {
-    "equal": 1,
-    "unequal": 0,
-    "failed": 0
-   },
-   "reps": [
-    {
-     "failed": 0,
-     "unmeasured": 0,
-     "aggregate_tps": 138.80466890887286,
-     "steady_tps": 147.44968634421002,
-     "per_stream_tps": [
-      34.7,
-      37.2,
-      36.4,
-      35.5
-     ],
-     "ttft_s": [
-      0.16,
-      0.66,
-      0.5,
+      0.17,
       0.33
      ],
      "errors": [],
@@ -1167,6 +1041,132 @@
        "token_sha": "a37ae5eafccb",
        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4"
+      }
+     ],
+     "client_intervals": [
+      {
+       "start": 1655078.34178855,
+       "end": 1655084.581271838
+      },
+      {
+       "start": 1655078.34165839,
+       "end": 1655084.581037838
+      }
+     ],
+     "equal_alone": [
+      true,
+      true
+     ],
+     "comparisons": [
+      {
+       "concurrent": {
+        "tokens": 256,
+        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
+        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4",
+        "complete": true,
+        "error": null
+       },
+       "alone": {
+        "tokens": 256,
+        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
+        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4",
+        "complete": true,
+        "error": null
+       },
+       "serial": {
+        "tokens": 256,
+        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
+        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4",
+        "complete": true,
+        "error": null
+       }
+      },
+      {
+       "concurrent": {
+        "tokens": 256,
+        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
+        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4",
+        "complete": true,
+        "error": null
+       },
+       "alone": {
+        "tokens": 256,
+        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
+        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4",
+        "complete": true,
+        "error": null
+       },
+       "serial": {
+        "tokens": 256,
+        "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
+        "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4",
+        "complete": true,
+        "error": null
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "prompt": "chat",
+   "temperature": 0.0,
+   "streams": 4,
+   "failed": 0,
+   "unmeasured": 0,
+   "aggregate_tps": 138.8,
+   "per_stream_tps": 35.9,
+   "ttft_s_max": 0.65,
+   "steady_tps": 146.9,
+   "alone": {
+    "equal": 8,
+    "unequal": 0,
+    "failed": 0
+   },
+   "serial": {
+    "equal": 1,
+    "unequal": 0,
+    "failed": 0
+   },
+   "reps": [
+    {
+     "failed": 0,
+     "unmeasured": 0,
+     "aggregate_tps": 138.49546859823934,
+     "steady_tps": 146.6795830461939,
+     "per_stream_tps": [
+      35.4,
+      36.2,
+      37.0,
+      34.6
+     ],
+     "ttft_s": [
+      0.33,
+      0.49,
+      0.65,
+      0.17
+     ],
+     "errors": [],
+     "evidence": [
+      {
+       "prompt_tokens": 31,
+       "cached_tokens": 0,
+       "tokens": 256,
+       "cache_state": "cold",
+       "complete": true,
+       "token_sha": "a37ae5eafccb",
+       "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
+       "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4"
+      },
+      {
+       "prompt_tokens": 31,
+       "cached_tokens": 0,
+       "tokens": 256,
+       "cache_state": "cold",
+       "complete": true,
+       "token_sha": "a37ae5eafccb",
+       "token_sha256": "a37ae5eafccb5f23fd32cbbe9eab128f3e666fe4fc8e727bf7c038073794ffa2",
+       "output_sha256": "6602f0310985fc372bc79ce1c42270f193413ba261561a4844cf3eee557be5c4"
       },
       {
        "prompt_tokens": 31,
@@ -1191,20 +1191,20 @@
      ],
      "client_intervals": [
       {
-       "start": 1644055.586636509,
-       "end": 1644063.096293279
+       "start": 1655084.582476426,
+       "end": 1655092.117397214
       },
       {
-       "start": 1644055.586801949,
-       "end": 1644063.097096173
+       "start": 1655084.582990505,
+       "end": 1655092.117110127
       },
       {
-       "start": 1644055.58645259,
-       "end": 1644063.097139821
+       "start": 1655084.582747321,
+       "end": 1655092.117016671
       },
       {
-       "start": 1644055.586363086,
-       "end": 1644063.096774622
+       "start": 1655084.582366938,
+       "end": 1655092.117649037
       }
      ],
      "equal_alone": [
@@ -1311,19 +1311,19 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 139.01704183724817,
-     "steady_tps": 147.61667490869735,
+     "aggregate_tps": 139.03421680916614,
+     "steady_tps": 147.2170938625723,
      "per_stream_tps": [
-      36.4,
-      37.3,
-      35.6,
-      34.8
+      37.2,
+      34.8,
+      35.5,
+      36.3
      ],
      "ttft_s": [
-      0.49,
-      0.66,
+      0.65,
+      0.17,
       0.33,
-      0.16
+      0.49
      ],
      "errors": [],
      "evidence": [
@@ -1370,20 +1370,20 @@
      ],
      "client_intervals": [
       {
-       "start": 1644063.0988154,
-       "end": 1644070.595561862
+       "start": 1655092.118637611,
+       "end": 1655099.624401001
       },
       {
-       "start": 1644063.098446361,
-       "end": 1644070.595199687
+       "start": 1655092.118464251,
+       "end": 1655099.623765963
       },
       {
-       "start": 1644063.098243513,
-       "end": 1644070.595454662
+       "start": 1655092.118551835,
+       "end": 1655099.624100442
       },
       {
-       "start": 1644063.098149898,
-       "end": 1644070.595723862
+       "start": 1655092.118368331,
+       "end": 1655099.624172762
       }
      ],
      "equal_alone": [

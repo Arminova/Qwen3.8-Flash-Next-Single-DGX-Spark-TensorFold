@@ -1,18 +1,18 @@
-{"label": "", "prompt": "fibonacci-raw", "temperature": 0.0, "decode_tps_median": 75.85172401822628, "decode_tps_all": [76.02, 75.83, 75.85], "ttft_s_median": 0.12877030204981565}
-{"label": "", "prompt": "gpu-chat-no-think", "temperature": 0.0, "decode_tps_median": 46.85629772217983, "decode_tps_all": [46.86, 46.88, 46.73], "ttft_s_median": 0.16273265494965017}
+{"label": "", "prompt": "fibonacci-raw", "temperature": 0.0, "decode_tps_median": 75.88430911124398, "decode_tps_all": [76.01, 75.65, 75.88], "ttft_s_median": 0.1324400280136615}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 0.0, "decode_tps_median": 46.78399528206339, "decode_tps_all": [46.82, 46.78, 46.76], "ttft_s_median": 0.1649397979490459}
 [
  {
   "label": "",
   "prompt": "fibonacci-raw",
   "temperature": 0.0,
   "tokens": 256,
-  "decode_tps_median": 75.85172401822628,
+  "decode_tps_median": 75.88430911124398,
   "decode_tps_all": [
-   76.02,
-   75.83,
-   75.85
+   76.01,
+   75.65,
+   75.88
   ],
-  "ttft_s_median": 0.12877030204981565,
+  "ttft_s_median": 0.1324400280136615,
   "evidence": [
    {
     "prompt_tokens": 14,
@@ -49,13 +49,13 @@
   "prompt": "gpu-chat-no-think",
   "temperature": 0.0,
   "tokens": 256,
-  "decode_tps_median": 46.85629772217983,
+  "decode_tps_median": 46.78399528206339,
   "decode_tps_all": [
-   46.86,
-   46.88,
-   46.73
+   46.82,
+   46.78,
+   46.76
   ],
-  "ttft_s_median": 0.16273265494965017,
+  "ttft_s_median": 0.1649397979490459,
   "evidence": [
    {
     "prompt_tokens": 31,

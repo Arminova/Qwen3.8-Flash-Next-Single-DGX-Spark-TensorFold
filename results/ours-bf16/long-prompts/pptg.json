@@ -1,26 +1,34 @@
 [
  {
   "target": 32768,
-  "prompt_tokens": 31410,
+  "prompt_tokens": 31405,
   "completion_tokens": 128,
-  "ttft_s": 13.93,
-  "pp_tok_s": 2254.9,
-  "tg_tok_s": 44.4
+  "ttft_s": 13.9,
+  "pp_tok_s": 2259.8,
+  "tg_tok_s": 54.1
  },
  {
   "target": 65536,
-  "prompt_tokens": 63956,
+  "prompt_tokens": 63964,
   "completion_tokens": 128,
-  "ttft_s": 29.0,
-  "pp_tok_s": 2205.7,
-  "tg_tok_s": 52.2
+  "ttft_s": 28.94,
+  "pp_tok_s": 2210.3,
+  "tg_tok_s": 50.6
  },
  {
-  "target": 110000,
-  "prompt_tokens": 120039,
+  "target": 131072,
+  "prompt_tokens": 145637,
   "completion_tokens": 128,
-  "ttft_s": 58.13,
-  "pp_tok_s": 2065.0,
-  "tg_tok_s": 53.2
+  "ttft_s": 70.39,
+  "pp_tok_s": 2069.0,
+  "tg_tok_s": 44.0
+ },
+ {
+  "target": 250000,
+  "prompt_tokens": 245587,
+  "completion_tokens": 128,
+  "ttft_s": 132.15,
+  "pp_tok_s": 1858.4,
+  "tg_tok_s": 47.3
  }
 ]

@@ -1,13 +1,19 @@
 # Changelog
 
-## 0.1.0 (unreleased)
+## 0.2.0 (unreleased)
 
-- Qwen3.8-Flash-Next (NVIDIA FP4-Local) on one DGX Spark: TensorFold 1.1.4 (`eab85828`) plus 11 patches (@jschmied's
-  #1143 / #1171 / #1164, burst admission, our GB10 tuning, prompt rounding independent of how a fill is split, the
-  first token of a long undrafted prompt), built with Zig 0.17.0 and CUDA 13.3 in Docker, with
-  libtfgrammar from xgrammar v0.2.8.
-- Serving defaults: bf16 KV cache, 4 streams of 65,536 tokens, thinking on, MTP drafts, `TF_FLASHNEXT_DRAFT_HEAD=affine4`,
-  `TF_FLASHNEXT_CHUNK=4096`; `KV=fp8` for 5 streams of 262,144.
-- Checks: task suite 123 / 130 (bf16) and 124 (FP8); concurrent == alone 28 / 28; drafted == `"draft": false` (short
-  and long prompts); exact changes checked with reply hashes (`tools/same.py`); the same hashes with the prompt cache
-  on and off. Numbers in the README.
+- TensorFold 1.1.5 (`84e0d560`), which carries @jschmied's FP4-Local pull requests, plus 4 patches of ours: admission
+  of requests sent together, our GB10 tuning, prompt rounding independent of how a fill is split, and the first token
+  of a long `"draft": false` prompt.
+- Serving defaults: 262,144-token windows, 3 streams with the bf16 cache (the most the engine fits) and 5 with
+  `KV=fp8`; thinking on, MTP drafts, `TF_FLASHNEXT_DRAFT_HEAD=affine4`, `TF_FLASHNEXT_CHUNK=4096`.
+- Checks at those settings:
+  - task suite 123 / 130 (bf16) and 124 (FP8), against stock 1.1.5's 122
+  - concurrent == alone 28 / 28
+  - drafted == `"draft": false`
+  - reply hashes equal with the prompt cache on and off
+- Numbers against stock TensorFold 1.1.5 in the README; `tools/cache_bench.py` measures the prompt cache.
+
+## 0.1.0
+
+- The first version, on TensorFold 1.1.4 with @jschmied's pull requests carried as patches.

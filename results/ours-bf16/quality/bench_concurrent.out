@@ -1,9 +1,9 @@
-{"label": "", "prompt": "code", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 80.8, "per_stream_tps": 80.8, "ttft_s_max": 0.13, "alone": {"equal": 2, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
-{"label": "", "prompt": "code", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 143.6, "per_stream_tps": 73.0, "ttft_s_max": 0.25, "steady_tps": 148.9, "alone": {"equal": 4, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
-{"label": "", "prompt": "code", "temperature": 0.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 228.6, "per_stream_tps": 59.6, "ttft_s_max": 0.55, "steady_tps": 251.5, "alone": {"equal": 8, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
-{"label": "", "prompt": "chat", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 49.7, "per_stream_tps": 49.7, "ttft_s_max": 0.17, "alone": {"equal": 2, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
-{"label": "", "prompt": "chat", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 90.3, "per_stream_tps": 45.8, "ttft_s_max": 0.32, "steady_tps": 92.5, "alone": {"equal": 4, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
-{"label": "", "prompt": "chat", "temperature": 0.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 149.9, "per_stream_tps": 38.8, "ttft_s_max": 0.65, "steady_tps": 160.1, "alone": {"equal": 8, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
+{"label": "", "prompt": "code", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 80.7, "per_stream_tps": 80.7, "ttft_s_max": 0.13, "alone": {"equal": 2, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
+{"label": "", "prompt": "code", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 142.8, "per_stream_tps": 72.7, "ttft_s_max": 0.26, "steady_tps": 148.3, "alone": {"equal": 4, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
+{"label": "", "prompt": "code", "temperature": 0.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 140.5, "per_stream_tps": 67.5, "ttft_s_max": 4.23, "alone": {"equal": 8, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
+{"label": "", "prompt": "chat", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 49.8, "per_stream_tps": 49.8, "ttft_s_max": 0.17, "alone": {"equal": 2, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
+{"label": "", "prompt": "chat", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 90.0, "per_stream_tps": 45.6, "ttft_s_max": 0.33, "steady_tps": 92.2, "alone": {"equal": 4, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
+{"label": "", "prompt": "chat", "temperature": 0.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 88.5, "per_stream_tps": 42.5, "ttft_s_max": 6.56, "alone": {"equal": 8, "unequal": 0, "failed": 0}, "serial": {"equal": 1, "unequal": 0, "failed": 0}}
 {
  "label": "",
  "tokens": 256,
@@ -15,8 +15,8 @@
    "streams": 1,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 80.8,
-   "per_stream_tps": 80.8,
+   "aggregate_tps": 80.7,
+   "per_stream_tps": 80.7,
    "ttft_s_max": 0.13,
    "alone": {
     "equal": 2,
@@ -32,65 +32,7 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 80.66305955961572,
-     "per_stream_tps": [
-      80.7
-     ],
-     "ttft_s": [
-      0.13
-     ],
-     "errors": [],
-     "evidence": [
-      {
-       "prompt_tokens": 14,
-       "cached_tokens": 0,
-       "tokens": 256,
-       "cache_state": "cold",
-       "complete": true,
-       "token_sha": "d011394c106d",
-       "token_sha256": "d011394c106deb99b6392f49856aa59804f215c31f49fc46d4dacd36825b9725",
-       "output_sha256": "e5d92c5b082fb69d75b406717ce42c2ac10a48ee935469929513b36ad7dea876"
-      }
-     ],
-     "client_intervals": [
-      {
-       "start": 1643230.815470663,
-       "end": 1643234.105074202
-      }
-     ],
-     "equal_alone": [
-      true
-     ],
-     "comparisons": [
-      {
-       "concurrent": {
-        "tokens": 256,
-        "token_sha256": "d011394c106deb99b6392f49856aa59804f215c31f49fc46d4dacd36825b9725",
-        "output_sha256": "e5d92c5b082fb69d75b406717ce42c2ac10a48ee935469929513b36ad7dea876",
-        "complete": true,
-        "error": null
-       },
-       "alone": {
-        "tokens": 256,
-        "token_sha256": "d011394c106deb99b6392f49856aa59804f215c31f49fc46d4dacd36825b9725",
-        "output_sha256": "e5d92c5b082fb69d75b406717ce42c2ac10a48ee935469929513b36ad7dea876",
-        "complete": true,
-        "error": null
-       },
-       "serial": {
-        "tokens": 256,
-        "token_sha256": "d011394c106deb99b6392f49856aa59804f215c31f49fc46d4dacd36825b9725",
-        "output_sha256": "e5d92c5b082fb69d75b406717ce42c2ac10a48ee935469929513b36ad7dea876",
-        "complete": true,
-        "error": null
-       }
-      }
-     ]
-    },
-    {
-     "failed": 0,
-     "unmeasured": 0,
-     "aggregate_tps": 80.87631867049441,
+     "aggregate_tps": 80.87460615736673,
      "per_stream_tps": [
       80.9
      ],
@@ -112,8 +54,66 @@
      ],
      "client_intervals": [
       {
-       "start": 1643234.105472633,
-       "end": 1643237.387186397
+       "start": 1654358.801414548,
+       "end": 1654362.087590494
+      }
+     ],
+     "equal_alone": [
+      true
+     ],
+     "comparisons": [
+      {
+       "concurrent": {
+        "tokens": 256,
+        "token_sha256": "d011394c106deb99b6392f49856aa59804f215c31f49fc46d4dacd36825b9725",
+        "output_sha256": "e5d92c5b082fb69d75b406717ce42c2ac10a48ee935469929513b36ad7dea876",
+        "complete": true,
+        "error": null
+       },
+       "alone": {
+        "tokens": 256,
+        "token_sha256": "d011394c106deb99b6392f49856aa59804f215c31f49fc46d4dacd36825b9725",
+        "output_sha256": "e5d92c5b082fb69d75b406717ce42c2ac10a48ee935469929513b36ad7dea876",
+        "complete": true,
+        "error": null
+       },
+       "serial": {
+        "tokens": 256,
+        "token_sha256": "d011394c106deb99b6392f49856aa59804f215c31f49fc46d4dacd36825b9725",
+        "output_sha256": "e5d92c5b082fb69d75b406717ce42c2ac10a48ee935469929513b36ad7dea876",
+        "complete": true,
+        "error": null
+       }
+      }
+     ]
+    },
+    {
+     "failed": 0,
+     "unmeasured": 0,
+     "aggregate_tps": 80.53166151802125,
+     "per_stream_tps": [
+      80.5
+     ],
+     "ttft_s": [
+      0.13
+     ],
+     "errors": [],
+     "evidence": [
+      {
+       "prompt_tokens": 14,
+       "cached_tokens": 0,
+       "tokens": 256,
+       "cache_state": "cold",
+       "complete": true,
+       "token_sha": "d011394c106d",
+       "token_sha256": "d011394c106deb99b6392f49856aa59804f215c31f49fc46d4dacd36825b9725",
+       "output_sha256": "e5d92c5b082fb69d75b406717ce42c2ac10a48ee935469929513b36ad7dea876"
+      }
+     ],
+     "client_intervals": [
+      {
+       "start": 1654362.088187212,
+       "end": 1654365.387894802
       }
      ],
      "equal_alone": [
@@ -153,10 +153,10 @@
    "streams": 2,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 143.6,
-   "per_stream_tps": 73.0,
-   "ttft_s_max": 0.25,
-   "steady_tps": 148.9,
+   "aggregate_tps": 142.8,
+   "per_stream_tps": 72.7,
+   "ttft_s_max": 0.26,
+   "steady_tps": 148.3,
    "alone": {
     "equal": 4,
     "unequal": 0,
@@ -171,14 +171,14 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 143.68348971045768,
-     "steady_tps": 149.01800988198195,
+     "aggregate_tps": 142.84888919162108,
+     "steady_tps": 148.31812014043666,
      "per_stream_tps": [
-      74.4,
-      71.8
+      74.0,
+      71.4
      ],
      "ttft_s": [
-      0.25,
+      0.26,
       0.13
      ],
      "errors": [],
@@ -206,12 +206,12 @@
      ],
      "client_intervals": [
       {
-       "start": 1643237.388293018,
-       "end": 1643241.065204161
+       "start": 1654365.388754319,
+       "end": 1654369.091182089
       },
       {
-       "start": 1643237.387956011,
-       "end": 1643241.065329713
+       "start": 1654365.388656479,
+       "end": 1654369.090825898
       }
      ],
      "equal_alone": [
@@ -270,15 +270,15 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 143.47689149216347,
-     "steady_tps": 148.6901281679551,
+     "aggregate_tps": 142.74095678990355,
+     "steady_tps": 148.2394290823943,
      "per_stream_tps": [
-      71.7,
-      74.2
+      71.4,
+      74.0
      ],
      "ttft_s": [
       0.13,
-      0.25
+      0.26
      ],
      "errors": [],
      "evidence": [
@@ -305,12 +305,12 @@
      ],
      "client_intervals": [
       {
-       "start": 1643241.065950015,
-       "end": 1643244.749402706
+       "start": 1654369.091819127,
+       "end": 1654372.798284172
       },
       {
-       "start": 1643241.065885231,
-       "end": 1643244.749172387
+       "start": 1654369.091691384,
+       "end": 1654372.798714267
       }
      ],
      "equal_alone": [
@@ -374,10 +374,9 @@
    "streams": 4,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 228.6,
-   "per_stream_tps": 59.6,
-   "ttft_s_max": 0.55,
-   "steady_tps": 251.5,
+   "aggregate_tps": 140.5,
+   "per_stream_tps": 67.5,
+   "ttft_s_max": 4.23,
    "alone": {
     "equal": 8,
     "unequal": 0,
@@ -392,19 +391,18 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 226.06078252313918,
-     "steady_tps": 249.38692541032123,
+     "aggregate_tps": 139.79933706201544,
      "per_stream_tps": [
-      56.5,
-      59.9,
-      58.1,
-      62.3
+      79.5,
+      68.8,
+      66.5,
+      64.4
      ],
      "ttft_s": [
-      0.13,
+      4.22,
       0.38,
-      0.25,
-      0.55
+      0.26,
+      0.13
      ],
      "errors": [],
      "evidence": [
@@ -451,20 +449,20 @@
      ],
      "client_intervals": [
       {
-       "start": 1643244.750389712,
-       "end": 1643249.388098523
+       "start": 1654372.800339814,
+       "end": 1654380.22663593
       },
       {
-       "start": 1643244.750702351,
-       "end": 1643249.388748777
+       "start": 1654372.800265334,
+       "end": 1654376.890865051
       },
       {
-       "start": 1643244.75090339,
-       "end": 1643249.388321226
+       "start": 1654372.799967303,
+       "end": 1654376.890377676
       },
       {
-       "start": 1643244.75031208,
-       "end": 1643249.388506234
+       "start": 1654372.799868583,
+       "end": 1654376.890652396
       }
      ],
      "equal_alone": [
@@ -571,19 +569,18 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 231.0497197397825,
-     "steady_tps": 253.5206735015242,
+     "aggregate_tps": 141.16263162905136,
      "per_stream_tps": [
-      59.4,
-      57.8,
-      61.3,
-      63.3
+      64.2,
+      66.3,
+      81.6,
+      68.5
      ],
      "ttft_s": [
-      0.25,
       0.13,
-      0.38,
-      0.52
+      0.26,
+      4.23,
+      0.38
      ],
      "errors": [],
      "evidence": [
@@ -630,20 +627,20 @@
      ],
      "client_intervals": [
       {
-       "start": 1643249.389683527,
-       "end": 1643253.931459545
+       "start": 1654380.228933283,
+       "end": 1654384.333098893
       },
       {
-       "start": 1643249.389436072,
-       "end": 1643253.931384329
+       "start": 1654380.228741155,
+       "end": 1654384.33336262
       },
       {
-       "start": 1643249.389578519,
-       "end": 1643253.930702971
+       "start": 1654380.22980376,
+       "end": 1654387.584581993
       },
       {
-       "start": 1643249.38933236,
-       "end": 1643253.931019098
+       "start": 1654380.2286209,
+       "end": 1654384.333578956
       }
      ],
      "equal_alone": [
@@ -755,8 +752,8 @@
    "streams": 1,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 49.7,
-   "per_stream_tps": 49.7,
+   "aggregate_tps": 49.8,
+   "per_stream_tps": 49.8,
    "ttft_s_max": 0.17,
    "alone": {
     "equal": 2,
@@ -772,12 +769,12 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 49.72619203666892,
+     "aggregate_tps": 49.83859675719913,
      "per_stream_tps": [
-      49.7
+      49.8
      ],
      "ttft_s": [
-      0.16
+      0.17
      ],
      "errors": [],
      "evidence": [
@@ -794,8 +791,8 @@
      ],
      "client_intervals": [
       {
-       "start": 1643269.816986405,
-       "end": 1643275.109390773
+       "start": 1654403.309967505,
+       "end": 1654408.593461028
       }
      ],
      "equal_alone": [
@@ -830,7 +827,7 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 49.702375355241,
+     "aggregate_tps": 49.73644370854184,
      "per_stream_tps": [
       49.7
      ],
@@ -852,8 +849,8 @@
      ],
      "client_intervals": [
       {
-       "start": 1643275.110231059,
-       "end": 1643280.405885755
+       "start": 1654408.593932419,
+       "end": 1654413.888637551
       }
      ],
      "equal_alone": [
@@ -893,10 +890,10 @@
    "streams": 2,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 90.3,
-   "per_stream_tps": 45.8,
-   "ttft_s_max": 0.32,
-   "steady_tps": 92.5,
+   "aggregate_tps": 90.0,
+   "per_stream_tps": 45.6,
+   "ttft_s_max": 0.33,
+   "steady_tps": 92.2,
    "alone": {
     "equal": 4,
     "unequal": 0,
@@ -911,15 +908,15 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 90.23644414997536,
-     "steady_tps": 92.44599205422251,
+     "aggregate_tps": 89.88137588004162,
+     "steady_tps": 92.08451233096251,
      "per_stream_tps": [
-      46.4,
-      45.1
+      46.2,
+      44.9
      ],
      "ttft_s": [
-      0.32,
-      0.16
+      0.33,
+      0.17
      ],
      "errors": [],
      "evidence": [
@@ -946,12 +943,12 @@
      ],
      "client_intervals": [
       {
-       "start": 1643280.407572886,
-       "end": 1643286.222147244
+       "start": 1654413.889277262,
+       "end": 1654419.730169101
       },
       {
-       "start": 1643280.407457094,
-       "end": 1643286.222490331
+       "start": 1654413.889152014,
+       "end": 1654419.730932602
       }
      ],
      "equal_alone": [
@@ -1010,15 +1007,15 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 90.30434750116495,
-     "steady_tps": 92.46874475601906,
+     "aggregate_tps": 90.02600639635271,
+     "steady_tps": 92.22540222975242,
      "per_stream_tps": [
-      46.4,
-      45.2
+      46.3,
+      45.0
      ],
      "ttft_s": [
       0.32,
-      0.16
+      0.17
      ],
      "errors": [],
      "evidence": [
@@ -1045,12 +1042,12 @@
      ],
      "client_intervals": [
       {
-       "start": 1643286.223323641,
-       "end": 1643292.032204918
+       "start": 1654419.731412073,
+       "end": 1654425.56197783
       },
       {
-       "start": 1643286.223026137,
-       "end": 1643292.031835719
+       "start": 1654419.731313497,
+       "end": 1654425.561705895
       }
      ],
      "equal_alone": [
@@ -1114,10 +1111,9 @@
    "streams": 4,
    "failed": 0,
    "unmeasured": 0,
-   "aggregate_tps": 149.9,
-   "per_stream_tps": 38.8,
-   "ttft_s_max": 0.65,
-   "steady_tps": 160.1,
+   "aggregate_tps": 88.5,
+   "per_stream_tps": 42.5,
+   "ttft_s_max": 6.56,
    "alone": {
     "equal": 8,
     "unequal": 0,
@@ -1132,19 +1128,18 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 149.99407671315146,
-     "steady_tps": 160.15513715200885,
+     "aggregate_tps": 88.57402546495258,
      "per_stream_tps": [
-      38.4,
-      39.3,
-      40.4,
-      37.5
+      40.9,
+      43.1,
+      42.0,
+      49.8
      ],
      "ttft_s": [
-      0.31,
+      0.16,
       0.48,
-      0.64,
-      0.16
+      0.32,
+      6.56
      ],
      "errors": [],
      "evidence": [
@@ -1191,20 +1186,20 @@
      ],
      "client_intervals": [
       {
-       "start": 1643292.033250243,
-       "end": 1643298.992292329
+       "start": 1654425.563379218,
+       "end": 1654431.960870535
       },
       {
-       "start": 1643292.033440226,
-       "end": 1643298.992388136
+       "start": 1654425.563168818,
+       "end": 1654431.961448821
       },
       {
-       "start": 1643292.033633649,
-       "end": 1643298.992863383
+       "start": 1654425.563484433,
+       "end": 1654431.961531813
       },
       {
-       "start": 1643292.033164659,
-       "end": 1643298.992978566
+       "start": 1654425.563088083,
+       "end": 1654437.240724487
       }
      ],
      "equal_alone": [
@@ -1311,19 +1306,18 @@
     {
      "failed": 0,
      "unmeasured": 0,
-     "aggregate_tps": 149.77317674430353,
-     "steady_tps": 160.05344846703377,
+     "aggregate_tps": 88.5137388597538,
      "per_stream_tps": [
-      37.4,
-      40.3,
-      39.3,
-      38.3
+      49.8,
+      41.9,
+      43.0,
+      40.9
      ],
      "ttft_s": [
-      0.16,
-      0.65,
+      6.56,
+      0.32,
       0.48,
-      0.31
+      0.16
      ],
      "errors": [],
      "evidence": [
@@ -1370,20 +1364,20 @@
      ],
      "client_intervals": [
       {
-       "start": 1643298.994223763,
-       "end": 1643305.962911624
+       "start": 1654437.241696276,
+       "end": 1654448.92813812
       },
       {
-       "start": 1643298.99433189,
-       "end": 1643305.963560566
+       "start": 1654437.241861684,
+       "end": 1654443.646016692
       },
       {
-       "start": 1643298.994539074,
-       "end": 1643305.96351639
+       "start": 1654437.241756484,
+       "end": 1654443.645864229
       },
       {
-       "start": 1643298.994106275,
-       "end": 1643305.963436998
+       "start": 1654437.241583013,
+       "end": 1654443.6461669
       }
      ],
      "equal_alone": [

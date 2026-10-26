@@ -1,0 +1,7 @@
+2026-10-26 01:35:44 start: http://127.0.0.1:8890 as qwen3.8-flash-next (quick)
+2026-10-26 01:36:24 bench_openai rc=0: "prompt": "fibonacci-raw" =: 73.58663832255412 "prompt": "gpu-chat-no-think" =: 45.51761991864067 
+2026-10-26 01:38:16 bench_concurrent rc=0: code x1 73.2 (alone 2/2, failed 0); code x2 132.2 (alone 4/4, failed 0); code x4 129.7 (alone 8/8, failed 0); chat x1 45.3 (alone 2/2, failed 0); chat x2 82.5 (alone 4/4, failed 0); chat x4 81.5 (alone 8/8, failed 0)
+2026-10-26 01:45:07 tasks rc=0 in 411s:  gsm8k 46/50; json 15/15; instruct 8/10; tools 20/20; agent 8/10;
+2026-10-26 01:45:07 code:  code 25/25
+2026-10-26 01:46:16 accept rc=0: {"summary": "code", "prompts": 3, "tokens": 1152, "tokens_per_round": 4.75, "tok_s": 67.3} {"summary": "explain", "prompts": 3, "tokens": 1152, "tokens_per_round": 3.14, "tok_s": 49.7} {"summary": "prose", "prompts": 2, "tokens": 643, "tokens_per_round": 2.11, "tok_s": 36.4} {"summary": "german", "prompts": 1, "tokens": 384, "tokens_per_round": 2.34, "tok_s": 40.4} 
+2026-10-26 01:46:20 min MemAvailable 38.9 GB
