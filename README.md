@@ -1,5 +1,12 @@
 # Qwen3.8-Flash-Next on one DGX Spark (TensorFold)
 
+> **Update, November 2026:** much of the GB10 work behind this repository has since been merged into TensorFold
+> itself, with replies token-equal to the engine before it: the loader in 1.1.8
+> ([#1368](https://github.com/ashhart/TensorFold/pull/1368)), decode with several streams and the prompt passes in 1.2.2
+> ([#1763](https://github.com/ashhart/TensorFold/pull/1763), [#1764](https://github.com/ashhart/TensorFold/pull/1764)),
+> and the drafted rounds on `main` ([#1786](https://github.com/ashhart/TensorFold/pull/1786)). This repository stays
+> as published on 1.1.5, and the numbers below are for that build.
+
 Qwen3.8-Flash-Next (a mixture of experts with 176B parameters) served on **one** NVIDIA DGX Spark through
 [TensorFold](https://github.com/ashhart/TensorFold)'s native engine, tuned for the GB10. OpenAI-compatible API,
 thinking on, the checkpoint's own MTP drafts, 3 streams of 262,144 tokens (5 with the FP8 cache).
