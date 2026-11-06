@@ -1,0 +1,2 @@
+[1;36m→[0m ready after 75s: http://0.0.0.0:8888/v1 (model qwen3.8-flash-next). Stop with ./stop.sh
+start wall 76 s

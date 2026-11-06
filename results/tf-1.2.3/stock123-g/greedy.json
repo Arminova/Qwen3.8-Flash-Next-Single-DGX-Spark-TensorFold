@@ -1,0 +1,34 @@
+{
+ "code_x1": {
+  "aggregate_median": 75.3,
+  "aggregates": [
+   74.8,
+   75.5,
+   75.3
+  ]
+ },
+ "code_x3": {
+  "aggregate_median": 182.3,
+  "aggregates": [
+   182.3,
+   182.3,
+   183.0
+  ]
+ },
+ "chat_x1": {
+  "aggregate_median": 51.0,
+  "aggregates": [
+   49.6,
+   51.0,
+   51.0
+  ]
+ },
+ "chat_x3": {
+  "aggregate_median": 130.2,
+  "aggregates": [
+   130.2,
+   130.9,
+   130.2
+  ]
+ }
+}

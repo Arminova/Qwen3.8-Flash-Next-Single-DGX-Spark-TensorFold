@@ -1,0 +1,70 @@
+{
+ "alone": {
+  "0": {
+   "tokens": 256,
+   "sha": "2dfbb7db57c03351",
+   "head": "```python\n# lru_cache.py\n\nclass LRUCache:\n    \"\"\"\n    A Leas"
+  },
+  "1": {
+   "tokens": 256,
+   "sha": "d419471ab71ccd46",
+   "head": "A Mixture-of-Experts (MoE) transformer operates by replacing"
+  },
+  "2": {
+   "tokens": 256,
+   "sha": "26fd85fda2b7dc44",
+   "head": "The fog at Blackwood Point did not roll in; it descended, he"
+  },
+  "3": {
+   "tokens": 247,
+   "sha": "dc22d8b8c5ddcbef",
+   "head": "```c\n#include <stddef.h>\n\n/**\n * Definition for a singly-lin"
+  },
+  "4": {
+   "tokens": 217,
+   "sha": "42d2eda70d8fa06d",
+   "head": "Here are the key differences between TCP and UDP:\n\n*   **Con"
+  },
+  "5": {
+   "tokens": 29,
+   "sha": "38bd0a2d540dda4b",
+   "head": "Der schnelle braune Fuchs springt \u00fcber den faulen Hund und g"
+  },
+  "6": {
+   "tokens": 256,
+   "sha": "ed840e58e4de280b",
+   "head": "### Step 1: List the First 30 Prime Numbers\n\nA prime number "
+  },
+  "7": {
+   "tokens": 149,
+   "sha": "5b93ca3426539237",
+   "head": "In Verona, the young Montague Romeo falls instantly in love "
+  }
+ },
+ "x3": {
+  "0": {
+   "tokens": 256,
+   "sha": "2dfbb7db57c03351"
+  },
+  "1": {
+   "tokens": 256,
+   "sha": "d419471ab71ccd46"
+  },
+  "2": {
+   "tokens": 256,
+   "sha": "26fd85fda2b7dc44"
+  },
+  "3": {
+   "tokens": 247,
+   "sha": "dc22d8b8c5ddcbef"
+  },
+  "4": {
+   "tokens": 217,
+   "sha": "42d2eda70d8fa06d"
+  },
+  "5": {
+   "tokens": 29,
+   "sha": "38bd0a2d540dda4b"
+  }
+ }
+}

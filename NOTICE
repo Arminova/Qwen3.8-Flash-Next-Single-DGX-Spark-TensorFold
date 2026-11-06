@@ -3,7 +3,7 @@ Copyright 2026 Arminova
 
 This repository is licensed under the Apache License, Version 2.0 (LICENSE).
 
-It contains patches to TensorFold (https://github.com/ashhart/TensorFold), which carries this notice:
+It builds TensorFold (https://github.com/ashhart/TensorFold), which carries this notice:
 
   TensorFold
   Copyright 2026 TensorFold contributors
@@ -14,8 +14,9 @@ It contains patches to TensorFold (https://github.com/ashhart/TensorFold), which
   MIT notice in LICENSES/MIT.txt. Third-party code and its licenses are listed in
   THIRD_PARTY_NOTICES.md.
 
-The patches change TensorFold's source as described in each patch's message. Patches 0001-0007 are by their
-author, Jürgen Schmied (@jschmied), from TensorFold pull requests #1143, #1171 and #1164.
+The image is built from an unmodified TensorFold checkout (patches/ is empty). The earlier build of this repository
+(commit 3bfc9fc) applied patches to TensorFold 1.1.5; the first ones of its history, 0001-0007, are by their author,
+Jürgen Schmied (@jschmied), from TensorFold pull requests #1143, #1171 and #1164.
 
 The image prepare.sh builds also contains libtfgrammar, built from xgrammar (https://github.com/mlc-ai/xgrammar,
 Apache License 2.0).

@@ -1,0 +1,2 @@
+ready after 70s
+start wall 71 s
