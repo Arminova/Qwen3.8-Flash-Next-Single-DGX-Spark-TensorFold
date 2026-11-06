@@ -2,10 +2,10 @@
 # with an environment variable of the same name (or put it in a .env file next to this one).
 [ -f "$(dirname "${BASH_SOURCE[0]}")/.env" ] && . "$(dirname "${BASH_SOURCE[0]}")/.env"
 
-# TensorFold, the engine our patches apply to (release 1.1.5)
+# TensorFold, the engine (release 1.2.3: it carries the pull requests of ours that matter for this model)
 TF_REPO=${TF_REPO:-https://github.com/ashhart/TensorFold.git}
-TF_REF=${TF_REF:-v1.1.5}
-TF_COMMIT=${TF_COMMIT:-84e0d560303d85c50becb730720c04a56e38abe5}
+TF_REF=${TF_REF:-v1.2.3}
+TF_COMMIT=${TF_COMMIT:-6ec5fa4cb233f3606acbdad5bec433f0f8758f96}
 # libtfgrammar (structured output and required tool calls) is built against this xgrammar release
 XGRAMMAR_REPO=${XGRAMMAR_REPO:-https://github.com/mlc-ai/xgrammar.git}
 XGRAMMAR_REF=${XGRAMMAR_REF:-v0.2.8}
@@ -17,8 +17,8 @@ CHECKPOINT_REVISION=${CHECKPOINT_REVISION:-b9ce18a6887e18c089fdea8509a33e63429a3
 MODELS_DIR=${MODELS_DIR:-$HOME/models}
 MODEL_DIR=${MODEL_DIR:-$MODELS_DIR/Qwen3.8-Flash-Next-FP4-Local}
 
-# the image start.sh runs, built by prepare.sh from the Dockerfile (TensorFold at TF_COMMIT plus patches/)
-IMAGE=${IMAGE:-qwen38-flash-next-spark-tensorfold:local}
+# the image start.sh runs, built by prepare.sh from the Dockerfile (TensorFold at TF_COMMIT, plus any patches/*.patch)
+IMAGE=${IMAGE:-qwen38-flash-next-spark-tensorfold:$TF_REF}
 BUILD_IMAGE=${BUILD_IMAGE:-nvidia/cuda:13.3.1-devel-ubuntu24.04}
 RUN_IMAGE=${RUN_IMAGE:-nvidia/cuda:13.3.1-base-ubuntu24.04}
 ZIG_VERSION=${ZIG_VERSION:-0.17.0}
@@ -31,11 +31,11 @@ NAME=${NAME:-qwen38-flash-next-tf}
 SERVED_MODEL_NAME=${SERVED_MODEL_NAME:-qwen3.8-flash-next}
 BIND=${BIND:-127.0.0.1}
 PORT=${PORT:-8888}
-# KV cache: bf16 (the default: 3 streams of 262,144 tokens, the most the engine fits) or fp8 (about 42 % fewer cache
-# bytes a token, faster prompts, 5 streams of 262,144 tokens)
+# the KV cache is bf16 (TensorFold 1.2.3 has no FP8 cache for Flash Next: the earlier recipe's KV=fp8, 5 streams, is
+# in commit 3bfc9fc); 3 streams of 262,144 tokens are the most it fits next to the weights
 KV=${KV:-bf16}
 CONTEXT=${CONTEXT:-262144}
-if [ "$KV" = fp8 ]; then PARALLEL=${PARALLEL:-5}; else PARALLEL=${PARALLEL:-3}; fi
+PARALLEL=${PARALLEL:-3}
 MAX_TOKENS=${MAX_TOKENS:-32768}
 # the settings every number in the README was measured with (4-bit draft head, 4,096-row prompt chunks)
 ENGINE_ENV=${ENGINE_ENV:-TF_FLASHNEXT_DRAFT_HEAD=affine4 TF_FLASHNEXT_CHUNK=4096}

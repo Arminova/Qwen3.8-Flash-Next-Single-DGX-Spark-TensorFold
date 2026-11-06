@@ -1,6 +1,6 @@
-# TensorFold at TF_COMMIT plus patches/, built on NVIDIA's CUDA image, with libtfgrammar (structured output) from
-# xgrammar XGRAMMAR_REF; the server and the library then go into a small CUDA base image. prepare.sh passes every
-# argument from config.sh.
+# TensorFold at TF_COMMIT (plus any patches/*.patch there are), built on NVIDIA's CUDA image, with libtfgrammar
+# (structured output) from xgrammar XGRAMMAR_REF; the server and the library then go into a small CUDA base image.
+# prepare.sh passes every argument from config.sh.
 ARG BUILD_IMAGE=nvidia/cuda:13.3.1-devel-ubuntu24.04
 ARG RUN_IMAGE=nvidia/cuda:13.3.1-base-ubuntu24.04
 
@@ -26,14 +26,14 @@ RUN set -eu; \
 RUN git clone --filter=blob:none --no-checkout "$TF_REPO" /src && git -C /src checkout --quiet --detach "$TF_COMMIT"
 RUN git clone --quiet --depth 1 --branch "$XGRAMMAR_REF" --recurse-submodules --shallow-submodules "$XGRAMMAR_REPO" /xgrammar
 COPY patches/ /patches/
-RUN cd /src && git apply --whitespace=nowarn /patches/*.patch
+RUN cd /src && for p in /patches/*.patch; do [ -e "$p" ] || continue; git apply --whitespace=nowarn "$p"; done
 RUN cd /src && /opt/zig/zig build native --prefix /opt/tensorfold -Dnvcc=/usr/local/cuda/bin/nvcc
 RUN cd /src && /opt/zig/zig build grammar --prefix /opt/tensorfold -Dxgrammar=/xgrammar
 
 FROM ${RUN_IMAGE}
-ARG PATCHES_HASH=unknown
+ARG BUILD_HASH=unknown
 ARG TF_COMMIT
-LABEL tf.patches="${PATCHES_HASH}" \
+LABEL tf.build="${BUILD_HASH}" \
       tf.commit="${TF_COMMIT}" \
       org.opencontainers.image.title="Qwen3.8-Flash-Next on one DGX Spark (TensorFold)" \
       org.opencontainers.image.source="https://github.com/Arminova/Qwen3.8-Flash-Next-Single-DGX-Spark-TensorFold" \

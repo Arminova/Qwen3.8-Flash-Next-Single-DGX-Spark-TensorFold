@@ -1,16 +1,16 @@
 #!/bin/bash
-# start.sh: serves Qwen3.8-Flash-Next (NVIDIA FP4-Local) on one DGX Spark through TensorFold with our patches: an
-# OpenAI-compatible API on BIND:PORT (127.0.0.1:8888 by default), thinking on, MTP drafts. KV=bf16 (default): 3
-# streams of 262,144 tokens; KV=fp8: 5 streams of 262,144. Runs detached as container NAME and waits until the model
-# answers (~75 s from a warm disk). Settings: config.sh (or environment variables / .env).
-#   ./start.sh      KV=fp8 ./start.sh      ./stop.sh      docker logs -f qwen38-flash-next-tf
+# start.sh: serves Qwen3.8-Flash-Next (NVIDIA FP4-Local) on one DGX Spark through TensorFold: an OpenAI-compatible API
+# on BIND:PORT (127.0.0.1:8888 by default), thinking on, MTP drafts, 3 streams of 262,144 tokens with the bf16 cache.
+# Runs detached as container NAME and waits until the model answers (about 1 minute from a warm disk).
+# Settings: config.sh (or environment variables / .env).
+#   ./start.sh      ./stop.sh      docker logs -f qwen38-flash-next-tf
 set -euo pipefail
 D=$(cd "$(dirname "$0")" && pwd)
 . "$D/config.sh"
 say() { printf '\033[1;36m→\033[0m %s\n' "$*"; }
 die() { printf '\033[1;31m✗\033[0m %s\n' "$*"; exit 1; }
 
-case "$KV" in bf16 | fp8) ;; *) die "KV must be bf16 or fp8 (got $KV)" ;; esac
+[ "$KV" = bf16 ] || die "KV=$KV: TensorFold $TF_REF serves Flash Next with the bf16 cache only (the FP8 cache was in the build of commit 3bfc9fc)"
 docker image inspect "$IMAGE" > /dev/null 2>&1 || die "no image $IMAGE: run ./prepare.sh first"
 [ -f "$MODEL_DIR/config.json" ] || die "no checkpoint in $MODEL_DIR: run ./prepare.sh first"
 docker rm -f "$NAME" > /dev/null 2>&1 || true
@@ -21,7 +21,7 @@ fi
 host=$BIND
 [ "$host" = 0.0.0.0 ] && host=127.0.0.1
 [ "$BIND" = 0.0.0.0 ] && [ -z "${API_KEY:-}" ] && echo "  note: BIND=0.0.0.0 serves the whole network with no API key"
-envs=(-e TF_FLASHNEXT_KV="$KV" -e TENSORFOLD_NO_LIVE=1)
+envs=(-e TENSORFOLD_NO_LIVE=1)
 for kv in $ENGINE_ENV $EXTRA_ENV; do envs+=(-e "$kv"); done
 say "starting $SERVED_MODEL_NAME on $BIND:$PORT ($KV KV, $PARALLEL x $CONTEXT tokens, image $IMAGE)"
 docker run -d --name "$NAME" --gpus all --ipc=host -p "$BIND:$PORT:$PORT" -v "$MODEL_DIR":/model:ro \
