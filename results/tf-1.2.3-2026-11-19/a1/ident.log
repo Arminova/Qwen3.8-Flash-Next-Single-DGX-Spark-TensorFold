@@ -1,0 +1,9 @@
+ident 0: 256 tokens cd6b1d1a92140e8e
+ident 1: 256 tokens c31167046fd10263
+ident 2: 256 tokens a20e982d43630a5d
+ident 3: 242 tokens db3a4f4968206381
+ident 4: 154 tokens 7e02a569870084f0
+ident 5: 29 tokens 38bd0a2d540dda4b
+ident 6: 256 tokens ed840e58e4de280b
+ident 7: 150 tokens bd90b930d19ebb19
+{"alone": {"0": {"tokens": 256, "sha": "cd6b1d1a92140e8e", "head": "```python\n# lru_cache.py\n\nclass LRUCache:\n    \"\"\"\n    A Leas"}, "1": {"tokens": 256, "sha": "c31167046fd10263", "head": "A Mixture-of-Experts (MoE) transformer operates by replacing"}, "2": {"tokens": 256, "sha": "a20e982d43630a5d", "head": "The fog at Blackwood Point did not roll in; it descended, he"}, "3": {"tokens": 242, "sha": "db3a4f4968206381", "head": "```c\n#include <stddef.h>\n\n// Definition of a singly linked l"}, "4": {"tokens": 154, "sha": "7e02a569870084f0", "head": "Here are the key differences between TCP and UDP:\n\n*   **Con"}, "5": {"tokens": 29, "sha": "38bd0a2d540dda4b", "head": "Der schnelle braune Fuchs springt \u00fcber den faulen Hund und g"}, "6": {"tokens": 256, "sha": "ed840e58e4de280b", "head": "### Step 1: List the First 30 Prime Numbers\n\nA prime number "}, "7": {"tokens": 150, "sha": "bd90b930d19ebb19", "head": "In Verona, the young Montague Romeo falls instantly in love "}}, "x3": {"0": {"tokens": 256, "sha": "cd6b1d1a92140e8e"}, "1": {"tokens": 256, "sha": "c31167046fd10263"}, "2": {"tokens": 256, "sha": "a20e982d43630a5d"}, "3": {"tokens": 242, "sha": "db3a4f4968206381"}, "4": {"tokens": 154, "sha": "7e02a569870084f0"}, "5": {"tokens": 29, "sha": "38bd0a2d540dda4b"}}}

@@ -1,0 +1,3 @@
+[tensorfold] CUDA sm_121 device 0 (NVIDIA GB10, memory shared with the host): model 73.82 GiB; 3 streams at once, 7.91 GiB each at a 262144-token window, of 29.3 GiB left after a 12.2 GiB reserve; prompts in passes of up to 4096 rows, a 5.5 GiB prompt cache; own glue kernels
+avail after load: 41.3 GiB
+avail after bench: 38.2 GiB

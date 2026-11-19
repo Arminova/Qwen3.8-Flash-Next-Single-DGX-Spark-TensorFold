@@ -1,0 +1,3 @@
+[1;36m→[0m starting qwen3.8-flash-next on 127.0.0.1:8888 (bf16 KV, 3 x 262144 tokens, image qwen38-flash-next-spark-tensorfold:v1.2.10)
+[1;36m→[0m ready after 55s: http://127.0.0.1:8888/v1 (model qwen3.8-flash-next). Stop with ./stop.sh
+stopped qwen38-flash-next-tf

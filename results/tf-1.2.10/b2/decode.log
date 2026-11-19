@@ -1,0 +1,7 @@
+streams 1 rep 0: aggregate 72.4 tok/s per-stream [72.4] tokens [384]
+streams 1 rep 1: aggregate 73.1 tok/s per-stream [73.1] tokens [384]
+streams 1 rep 2: aggregate 72.7 tok/s per-stream [72.7] tokens [384]
+streams 3 rep 0: aggregate 103.9 tok/s per-stream [48.4, 28.6, 26.9] tokens [384, 384, 384]
+streams 3 rep 1: aggregate 105.5 tok/s per-stream [49.6, 28.6, 27.3] tokens [384, 384, 384]
+streams 3 rep 2: aggregate 105.4 tok/s per-stream [49.5, 28.7, 27.2] tokens [384, 384, 384]
+{"streams_1": {"aggregate_median": 72.7, "aggregates": [72.4, 73.1, 72.7], "per_stream": [[72.4], [73.1], [72.7]]}, "streams_3": {"aggregate_median": 105.4, "aggregates": [103.9, 105.5, 105.4], "per_stream": [[48.4, 28.6, 26.9], [49.6, 28.6, 27.3], [49.5, 28.7, 27.2]]}}

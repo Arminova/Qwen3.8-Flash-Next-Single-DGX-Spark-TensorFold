@@ -2,10 +2,10 @@
 # with an environment variable of the same name (or put it in a .env file next to this one).
 [ -f "$(dirname "${BASH_SOURCE[0]}")/.env" ] && . "$(dirname "${BASH_SOURCE[0]}")/.env"
 
-# TensorFold, the engine (release 1.2.3: it carries the pull requests of ours that matter for this model)
+# TensorFold, the engine (release 1.2.10)
 TF_REPO=${TF_REPO:-https://github.com/ashhart/TensorFold.git}
-TF_REF=${TF_REF:-v1.2.3}
-TF_COMMIT=${TF_COMMIT:-6ec5fa4cb233f3606acbdad5bec433f0f8758f96}
+TF_REF=${TF_REF:-v1.2.10}
+TF_COMMIT=${TF_COMMIT:-2a674b552498739e783a31c2573fc9ccf4d8cc0d}
 # libtfgrammar (structured output and required tool calls) is built against this xgrammar release
 XGRAMMAR_REPO=${XGRAMMAR_REPO:-https://github.com/mlc-ai/xgrammar.git}
 XGRAMMAR_REF=${XGRAMMAR_REF:-v0.2.8}
@@ -31,8 +31,8 @@ NAME=${NAME:-qwen38-flash-next-tf}
 SERVED_MODEL_NAME=${SERVED_MODEL_NAME:-qwen3.8-flash-next}
 BIND=${BIND:-127.0.0.1}
 PORT=${PORT:-8888}
-# the KV cache is bf16 (TensorFold 1.2.3 has no FP8 cache for Flash Next: the earlier recipe's KV=fp8, 5 streams, is
-# in commit 3bfc9fc); 3 streams of 262,144 tokens are the most it fits next to the weights
+# the KV cache is bf16 (TensorFold 1.2.3 had no FP8 cache for Flash Next and 1.2.10 was not tested with one: the earlier
+# recipe's KV=fp8, 5 streams, is in commit 3bfc9fc); 3 streams of 262,144 tokens are the most it fits next to the weights
 KV=${KV:-bf16}
 CONTEXT=${CONTEXT:-262144}
 PARALLEL=${PARALLEL:-3}

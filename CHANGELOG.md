@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.0 (unreleased)
+
+- TensorFold 1.2.10 (`2a674b55`, was 1.2.3), no patches; xgrammar `v0.2.8`, Zig 0.17.0 and the CUDA 13.3.1 images are as
+  before. Of our pull requests, #1866, #1942 and #2244 are new in it (1.2.4); the engine settings
+  (`TF_FLASHNEXT_DRAFT_HEAD=affine4`, `TF_FLASHNEXT_CHUNK=4096`) mean the same.
+- Measured against 1.2.3 on 2026-11-19 (four fresh starts in the order 1.2.3, 1.2.10, 1.2.10, 1.2.3): one stream decodes
+  the same (+0.1 to +0.4 %), three streams together are 2.6 to 3.0 % faster (mixed 102.8 to 105.5 tok/s), prompts of
+  ~2,400 and ~7,000 tokens are level or a little faster (within the spread between starts), the server is ready in 55 s
+  as before, memory is the same. The 8 greedy replies have the same token hashes on both, and 3 requests at once equal
+  their single-request replies (6 of 6).
+- `results/tf-1.2.10/` and `results/tf-1.2.3-2026-11-19/` hold the raw files; the prompt text of that day is TensorFold
+  1.2.3's `docs/*.md`.
+
 ## 0.3.0 (unreleased)
 
 - TensorFold 1.2.3 (`6ec5fa4c`), no patches. It carries our pull requests #1368, #1590, #1763, #1764, #1786 and #2160;

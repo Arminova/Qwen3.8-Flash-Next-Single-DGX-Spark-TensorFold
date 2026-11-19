@@ -1,0 +1,5 @@
+corpus: 1224541 chars from 118 files
+{"target": 2048, "prompt_tokens": 2359, "completion_tokens": 16, "ttft_s": 1.27, "pp_tok_s": 1858.9, "tg_tok_s": 45.2}
+{"target": 8192, "prompt_tokens": 6973, "completion_tokens": 16, "ttft_s": 3.56, "pp_tok_s": 1960.0, "tg_tok_s": 41.2}
+{"target": 2048, "prompt_tokens": 2395, "completion_tokens": 16, "ttft_s": 1.13, "pp_tok_s": 2117.6, "tg_tok_s": 45.7}
+{"target": 8192, "prompt_tokens": 7007, "completion_tokens": 16, "ttft_s": 3.24, "pp_tok_s": 2165.5, "tg_tok_s": 41.6}

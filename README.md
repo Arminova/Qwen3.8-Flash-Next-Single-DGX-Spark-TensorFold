@@ -5,7 +5,7 @@ Qwen3.8-Flash-Next (a mixture of experts with 176B parameters) served on **one**
 checkpoint's own MTP drafts, 3 streams of 262,144 tokens with the bf16 cache. It serves NVIDIA's public FP4-Local
 checkpoint as published.
 
-This repository is a recipe for **TensorFold 1.2.3**: a pinned release, the settings the numbers below were measured
+This repository is a recipe for **TensorFold 1.2.10**: a pinned release, the settings the numbers below were measured
 with, a Dockerfile, and scripts that download the checkpoint, build the image and start the server. It used to carry
 four patches of ours on TensorFold 1.1.5 (prompt and decode paths for the GB10, the loader, an MXFP8 language-model
 head, an FP8 KV cache, admission of requests sent together). TensorFold has since taken in the pull requests of ours
@@ -13,64 +13,66 @@ that matter for this model, and the patches are gone: see [Upstream](#upstream).
 
 ## Numbers
 
-Measured on one DGX Spark (GB10, 128 GB) on 2026-11-06 with the checkpoint below, thinking off, at 262,144-token
-windows and 3 streams, with `TF_FLASHNEXT_DRAFT_HEAD=affine4 TF_FLASHNEXT_CHUNK=4096`. **Ours, now** is this
-repository's build (TensorFold 1.2.3). **Ours, before** is the build this repository had until now (TensorFold 1.1.5
-plus four patches of ours, commit `3bfc9fc`). Same machine, same tools, same day, a fresh server for every start,
-nothing else running. Each figure is the median over every rep of 2 starts (now) or 3 starts (before); raw results in
-[`results/`](results/).
+Measured on one DGX Spark (GB10, 128 GB) on 2026-11-19 with the checkpoint below, thinking off, at 262,144-token
+windows and 3 streams, with `TF_FLASHNEXT_DRAFT_HEAD=affine4 TF_FLASHNEXT_CHUNK=4096`. **Ours, before** is this
+repository's build until now (TensorFold 1.2.3, no patches), **Ours, now** is TensorFold 1.2.10, also without patches.
+Same machine, same tools, same day, four fresh servers started in the order 1.2.3, 1.2.10, 1.2.10, 1.2.3, nothing else
+running. Each figure is the median over every rep of the 2 starts of a build; raw results in [`results/`](results/).
 
-| | Ours, before | Ours, now |
+| | Ours, before (1.2.3) | Ours, now (1.2.10) |
 |---|---:|---:|
-| Mixed load, 1 stream (tok/s) | **76.0** | 73.5 |
-| Mixed load, 3 streams (tok/s, together) | 105.0 | 104.5 |
-| Greedy code, 1 request (tok/s) | **76.8** | 75.5 |
-| Greedy code, same request x3 (tok/s, together) | **190.1** | 183.4 |
-| Greedy chat, 1 request (tok/s) | 47.6 | **51.0** |
-| Greedy chat, same request x3 (tok/s, together) | 124.0 | **130.3** |
-| Prompt, ~2,400 tokens (tok/s) | 1,982 | **2,038** |
-| Prompt, ~7,000 tokens (tok/s) | 2,159 | **2,181** |
-| Server ready after start (s) | 70, 70, 75 | **55, 55** |
+| Mixed load, 1 stream (tok/s) | 72.8 | 72.9 |
+| Mixed load, 3 streams (tok/s, together) | 102.8 | **105.5** |
+| Greedy code, 1 request (tok/s) | 74.3 | 74.4 |
+| Greedy code, same request x3 (tok/s, together) | 180.6 | **185.6** |
+| Greedy chat, 1 request (tok/s) | 50.2 | 50.4 |
+| Greedy chat, same request x3 (tok/s, together) | 128.5 | **132.4** |
+| Prompt, ~2,400 tokens (tok/s) | 1,916 | 2,079 |
+| Prompt, ~7,000 tokens (tok/s) | 2,116 | 2,157 |
+| Server ready after start (s) | 55, 55 | 55, 55 |
 
 **Mixed load**: `tools/bench.py decode`. Stream i takes the code, the explanation or the prose prompt, at temperature
 1.0 with its own seed, 384 tokens, 3 reps; the aggregate is the sum of each stream's own rate. **Greedy**:
 `tools/bench.py greedy`, 256 tokens, 3 reps. **Prompts**: `tools/pptg_bench.py`, a fresh text for every request so
-that no cache helps, prompt tokens over the time to the first token (the 2,048 and 8,192-token targets came to about
-2,400 and 7,000 tokens of this text). The earlier build's patches were written for 1.1.5; 1.2.3 itself has what
-mattered of them. What is left of them (an MXFP8 language-model head, bf16 MoE rows, a fused multiply-add DeltaNet
-chain) is worth 2 to 3 % on code decode (the rows above where "before" is ahead) and costs 5 to 7 % on greedy chat;
-the rest is within the spread between starts.
+that no cache helps, prompt tokens over the time to the first token, 2 requests of each size in a start (the text is
+TensorFold 1.2.3's `docs/*.md`; the 2,048 and 8,192-token targets came to about 2,400 and 7,000 tokens of it).
 
-On a 1.1.5 base the same measures were, before our patches, 69.3 tok/s at 1 stream and 96.0 at 3 (mixed load) and
-1,731 tok/s on a 3,900-token prompt (the README of commit `3bfc9fc`).
+How to read them: one stream decodes the same on both (+0.1 to +0.4 %). Three streams at once are 2.6 to 3.0 % faster
+on 1.2.10, and the two starts of each build agree (mixed 3 streams: 102.5 and 103.0 on 1.2.3, 106.0 and 105.4 on
+1.2.10). The prompt figures are level or a little faster: between starts of the same build the 2,400-token figure
+moves from 1,861 to 1,924 (1.2.3) and from 1,988 to 2,079 (1.2.10), so the ranges overlap, and at 7,000 tokens it is
+inside the spread. The first request after any start is the slowest.
 
-Settings matter more than the patches did. TensorFold 1.2.3 with no engine settings, with only
-`TF_FLASHNEXT_DRAFT_HEAD=affine4`, and with both settings of `config.sh` (`results/settings/`):
+Settings matter more than the version. TensorFold 1.2.3 with no engine settings, with only
+`TF_FLASHNEXT_DRAFT_HEAD=affine4`, and with both settings of `config.sh` (measured on 1.2.3 on 2026-11-06,
+`results/settings/`; not repeated on 1.2.10):
 
 | | no settings | `affine4` only | both |
 |---|---:|---:|---:|
 | Mixed load, 1 / 3 streams (tok/s) | 67.0 / 97.4 | 73.7 / 103.9 | 74.0 / 104.7 |
 | Prompts of ~2,400 / ~7,000 tokens (tok/s) | 1,637-1,780 / 1,835-1,867 | 1,757-1,794 / 1,868-1,869 | 1,990-2,045 / 2,016-2,143 |
 
-Not re-measured on 1.2.3: the 130-item task suite, long prompts (30,000 to 250,000 tokens), the prompt cache and the
-FP8 cache. `tools/accept_probe.py` and `tools/cache_bench.py` are still here; the earlier build's numbers for them
-are in commit `3bfc9fc`.
+Not re-measured on 1.2.10: the 130-item task suite, long prompts (30,000 to 250,000 tokens), the prompt cache and the
+FP8 cache. `tools/accept_probe.py` and `tools/cache_bench.py` are still here; the numbers of the build of commit
+`3bfc9fc` (TensorFold 1.1.5 plus four patches of ours) are in that commit's README.
 
-**Memory**: the engine reports 73.8 GiB for the model and 7.91 GiB for each 262,144-token stream, with a 5.7 GiB
-prompt cache; about 37 GiB of memory stayed available once loaded.
+**Memory**: the engine reports 73.8 GiB for the model and 7.91 GiB for each 262,144-token stream, with a prompt cache of
+5.1 to 5.9 GiB (it takes what is free at the start); 40.8 to 41.5 GiB of memory stayed available once loaded and 37.5
+to 38.2 GiB after the benchmarks.
 
 ## Exactness
 
-- Replies of this build equal unpatched TensorFold 1.2.3's: the same 8 greedy replies (thinking off, up to 256 tokens)
-  match token for token between this build, the 1.2.3 test image, and TensorFold `main` at `c70d67bb` (6 November).
-- Three identical-prompt requests at once give each the reply of its request alone, 6 of 6
+- Replies of this build equal TensorFold 1.2.3's: the same 8 greedy replies (thinking off, up to 256 tokens) have the same
+  token hashes in all four starts of 2026-11-19 (two of 1.2.3, two of 1.2.10). The 1.2.3 replies themselves equal the
+  unpatched 1.2.3 test image and TensorFold `main` at `c70d67bb` (6 November).
+- Three identical-prompt requests at once give each the reply of its request alone, 6 of 6 in every start
   (`tools/bench.py ident`).
-- Replies are **not** token for token those of the build before this one: 6 of the 8 differ. The cause is its four
-  rounding changes (the MXFP8 prompt tile, bf16 MoE slot rows on prompts, fused multiply-adds in the DeltaNet chain,
-  the MXFP8 language-model head), which 1.2.3 does not have. Check: the old build with those four switched off
-  (`TF_FLASHNEXT_HEAD=bf16 TF_FLASHNEXT_MOE_B16=0 TF_FLASHNEXT_GDN_FMA=0 TF_FLASHNEXT_PROMPT_MX8=0`) gives 1.2.3's
-  8 replies exactly (`results/settings/old-rounding-off/`). The 8 prompts are short, so they test decode, drafting and
-  the loader, not long-prompt rounding.
+- Replies are **not** token for token those of the build of commit `3bfc9fc` (TensorFold 1.1.5 plus four patches): 6 of
+  the 8 differ. The cause is its four rounding changes (the MXFP8 prompt tile, bf16 MoE slot rows on prompts, fused
+  multiply-adds in the DeltaNet chain, the MXFP8 language-model head), which TensorFold 1.2.3 and 1.2.10 do not have.
+  Check: that build with those four switched off (`TF_FLASHNEXT_HEAD=bf16 TF_FLASHNEXT_MOE_B16=0 TF_FLASHNEXT_GDN_FMA=0
+  TF_FLASHNEXT_PROMPT_MX8=0`) gives 1.2.3's 8 replies exactly (`results/settings/old-rounding-off/`). The 8 prompts are
+  short, so they test decode, drafting and the loader, not long-prompt rounding.
 
 ## Requirements
 
@@ -97,7 +99,7 @@ curl http://127.0.0.1:8888/v1/chat/completions -H "Content-Type: application/jso
 ## The Docker image
 
 `prepare.sh` builds it from [`Dockerfile`](Dockerfile): NVIDIA's CUDA 13.3 image, Zig 0.17.0 (checked by its SHA-256),
-TensorFold `v1.2.3` at the commit `config.sh` names, any [`patches/`](patches/) (none now), and `libtfgrammar`
+TensorFold `v1.2.10` at the commit `config.sh` names, any [`patches/`](patches/) (none now), and `libtfgrammar`
 (structured output and required tool calls) from xgrammar `v0.2.8`. The image holds the server and that library; the
 checkpoint stays on your disk, mounted read-only. It is tagged with the TensorFold version, and its `tf.build` label
 is a hash of the Dockerfile, the pins and the patches: `prepare.sh` rebuilds when it changes.
@@ -114,9 +116,9 @@ Everything is in [`config.sh`](config.sh); override a value with an environment 
 | `CONTEXT`, `PARALLEL` | 262,144 x 3 | the window (prompt plus reply) and the streams served at once; 3 is the most that fits next to the weights |
 | `SERVED_MODEL_NAME` | `qwen3.8-flash-next` | the model name clients send |
 | `ENGINE_ENV` | `TF_FLASHNEXT_DRAFT_HEAD=affine4 TF_FLASHNEXT_CHUNK=4096` | the engine settings every number above was measured with: the draft head in 4 bits (about 10 % faster decode) and 4,096-row prompt chunks (about 13 % faster prompts) |
-| `EXTRA_ENV` | empty | more engine switches, space-separated `KEY=VALUE` (see TensorFold's [Flash Next on CUDA](https://github.com/ashhart/TensorFold/blob/v1.2.3/docs/recipes/flash-next-cuda.md)) |
+| `EXTRA_ENV` | empty | more engine switches, space-separated `KEY=VALUE` (see TensorFold's [Flash Next on CUDA](https://github.com/ashhart/TensorFold/blob/v1.2.10/docs/recipes/flash-next-cuda.md)) |
 
-The bf16 KV cache is the only one: TensorFold 1.2.3 has no FP8 cache for Flash Next (`KV=fp8` is refused).
+The bf16 KV cache is the only one this recipe serves: TensorFold 1.2.3 had no FP8 cache for Flash Next, and none was tested on 1.2.10 (`KV=fp8` is refused).
 
 ## Good to know
 
@@ -128,17 +130,20 @@ The bf16 KV cache is the only one: TensorFold 1.2.3 has no FP8 cache for Flash N
 
 ## Upstream
 
-TensorFold 1.2.3 carries the pull requests of ours that this model needs: the loader
+TensorFold 1.2.10 carries the pull requests of ours that this model needs: the loader
 ([#1368](https://github.com/ashhart/TensorFold/pull/1368)), prompt passes and decode with several streams
 ([#1763](https://github.com/ashhart/TensorFold/pull/1763), [#1764](https://github.com/ashhart/TensorFold/pull/1764),
 [#1590](https://github.com/ashhart/TensorFold/pull/1590)), drafted rounds
 ([#1786](https://github.com/ashhart/TensorFold/pull/1786), [#2160](https://github.com/ashhart/TensorFold/pull/2160)),
-and @jschmied's FP4-Local pull requests from 1.1.5. [#1942](https://github.com/ashhart/TensorFold/pull/1942)
-(one launch for a shared round's DeltaNet steps) is on `main` only; a `main` build of 6 November measured the same as
-1.2.3 at 1 and 3 streams, so the recipe stays on the release. What did not go upstream: admission of requests sent
-together (no gain left: identical requests decode as fast without it), the MXFP8 head, bf16 MoE rows and the DeltaNet
-multiply-adds (their gain is gone and they change the rounding), and the FP8 KV cache (5 streams of 262,144 tokens;
-it is in commit `3bfc9fc`).
+and @jschmied's FP4-Local pull requests from 1.1.5. Three more of ours arrived after 1.2.3, in 1.2.4:
+[#1866](https://github.com/ashhart/TensorFold/pull/1866) (a prompt-cache mark inside a prompt chunk is kept on the way
+through the pass),
+[#1942](https://github.com/ashhart/TensorFold/pull/1942) (one launch for a shared round's DeltaNet steps; the
+3-stream gain in the table above fits it, 1.2.4 to 1.2.10 was measured as a whole) and
+[#2244](https://github.com/ashhart/TensorFold/pull/2244) (the draft head reads its own pages with `TF_FLASHNEXT_KV_PAGES`;
+default settings unchanged). What did not go upstream: admission of requests sent together (no gain left: identical
+requests decode as fast without it), the MXFP8 head, bf16 MoE rows and the DeltaNet multiply-adds (their gain is gone
+and they change the rounding), and the FP8 KV cache (5 streams of 262,144 tokens; it is in commit `3bfc9fc`).
 
 ## Credits
 

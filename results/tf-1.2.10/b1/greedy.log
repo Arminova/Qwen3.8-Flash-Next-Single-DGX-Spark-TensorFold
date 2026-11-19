@@ -1,0 +1,5 @@
+greedy code x1: {'aggregate_median': 74.5, 'aggregates': [74.4, 74.5, 74.6]}
+greedy code x3: {'aggregate_median': 185.9, 'aggregates': [185.2, 185.9, 186.2]}
+greedy chat x1: {'aggregate_median': 50.4, 'aggregates': [50.2, 50.5, 50.4]}
+greedy chat x3: {'aggregate_median': 132.4, 'aggregates': [132.5, 132.4, 132.4]}
+{"code_x1": {"aggregate_median": 74.5, "aggregates": [74.4, 74.5, 74.6]}, "code_x3": {"aggregate_median": 185.9, "aggregates": [185.2, 185.9, 186.2]}, "chat_x1": {"aggregate_median": 50.4, "aggregates": [50.2, 50.5, 50.4]}, "chat_x3": {"aggregate_median": 132.4, "aggregates": [132.5, 132.4, 132.4]}}

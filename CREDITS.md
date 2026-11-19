@@ -20,4 +20,6 @@
   the TensorFold pull requests [#1368](https://github.com/ashhart/TensorFold/pull/1368),
   [#1590](https://github.com/ashhart/TensorFold/pull/1590), [#1763](https://github.com/ashhart/TensorFold/pull/1763),
   [#1764](https://github.com/ashhart/TensorFold/pull/1764), [#1786](https://github.com/ashhart/TensorFold/pull/1786)
-  and [#2160](https://github.com/ashhart/TensorFold/pull/2160) that the earlier four patches became.
+  and [#2160](https://github.com/ashhart/TensorFold/pull/2160) that the earlier four patches became, and
+  [#1866](https://github.com/ashhart/TensorFold/pull/1866), [#1942](https://github.com/ashhart/TensorFold/pull/1942)
+  and [#2244](https://github.com/ashhart/TensorFold/pull/2244), in TensorFold since 1.2.4.
